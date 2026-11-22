@@ -1,6 +1,6 @@
 # catalog 04 — get product
 
-**Status:** Not started
+**Status:** In progress
 
 ## Goal
 Return a single product by id. This is the lookup Basket uses to validate a product and snapshot its name and price when an item is added.
