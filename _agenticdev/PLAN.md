@@ -10,14 +10,14 @@ Section refs like (§4.1) point to PROJECT.md.
   | Name | Path | Aspire resource |
   |---|---|---|
   | AppHost | `src/apphost.mts`, `src/aspire.config.json` | — |
-  | Catalog.Api | `src/catalog/` (Maven) | `catalog` |
-  | Ordering.Api | `src/ordering/` (Maven) | `ordering` |
-  | Basket.Api | `src/basket/` (Maven) | `basket` |
-  | Storefront | `src/storefront/` (Vue 3 + Vite + vue-base) | `storefront` |
+  | Catalog.Api | `src/java-back/catalog/` (Maven) | `catalog` |
+  | Ordering.Api | `src/java-back/ordering/` (Maven) | `ordering` |
+  | Basket.Api | `src/java-back/basket/` (Maven) | `basket` |
+  | Storefront | `src/vue-front/storefront/` (Vue 3 + Vite + vue-base) | `storefront` |
 
 - **Standard checks** referenced below:
   - `AppHost build`: `npm run build` in `src/` (eslint + tsc on `apphost.mts`).
-  - `mvn test`: `mvn -f src/<service>/pom.xml test` (Docker running for Testcontainers).
+  - `mvn test`: `mvn -f src/java-back/<service>/pom.xml test` (Docker running for Testcontainers).
   - `aspire run`: from `src/`; every resource Running/Healthy in the dashboard.
   - `HTTP via proxy`: `curl http://localhost:<storefront-port>/api/<service>/...` (port from the dashboard).
   - `Trace`: Aspire dashboard → Traces / Structured logs.
@@ -38,19 +38,19 @@ Section refs like (§4.1) point to PROJECT.md.
 - Multi-stage `Dockerfile` per service: Maven + JDK 21 build stage → JRE 21 runtime that downloads `opentelemetry-javaagent.jar` and starts with `-javaagent` (§8).
 - `.gitignore` for `target/`.
 - **Projects:** Catalog.Api, Ordering.Api, Basket.Api.
-- **Verify:** `mvn test` (context-loads test) in each; `docker build src/<service>` succeeds for each.
+- **Verify:** `mvn test` (context-loads test) in each; `docker build src/java-back/<service>` succeeds for each.
 
 ### 1.3 Storefront skeleton
-- Create `src/storefront/` with Vue 3 + Vite + vue-base; `Core.init(app, router, routes, { baseURL: '/api' })` with all routes public (no auth guards) (§6).
+- Create `src/vue-front/storefront/` with Vue 3 + Vite + vue-base; `Core.init(app, router, routes, { baseURL: '/api' })` with all routes public (no auth guards) (§6).
 - `vite.config`: proxy `/api/catalog`, `/api/basket`, `/api/ordering` to `services__{name}__http__0`, stripping the `/api/{service}` prefix (§2).
 - `buyerId` bootstrap: generate UUID v4 on first load, persist under `localStorage['eshop.buyerId']` (§3).
 - Placeholder route components for `/`, `/cart`, `/checkout`, `/orders`, `/orders/:id`.
 - **Projects:** Storefront.
-- **Verify:** `npm run build` in `src/storefront`; `npm run dev` serves the placeholder home page; `eshop.buyerId` appears in localStorage and survives reload.
+- **Verify:** `npm run build` in `src/vue-front/storefront`; `npm run dev` serves the placeholder home page; `eshop.buyerId` appears in localStorage and survives reload.
 
 ### 1.4 Wire services and storefront in the AppHost
 - `catalog`, `ordering`, `basket` via `addDockerfile(...)` with an HTTP endpoint on container port 8080.
-- `storefront` via `addViteApp("./storefront")` with external HTTP endpoints; references + waits to catalog, basket, ordering.
+- `storefront` via `addViteApp("./vue-front/storefront")` with external HTTP endpoints; references + waits to catalog, basket, ordering.
 - `basket` references + waits to catalog and ordering (gives `services__catalog__http__0`, `services__ordering__http__0`); map them in basket `application.yml` to `catalog.url` / `ordering.url`.
 - **Projects:** AppHost, Basket.Api (`application.yml` only).
 - **Verify:** AppHost build; `aspire run` shows catalog, ordering, basket, storefront Running; HTTP via proxy `GET /api/catalog/` returns Spring's 404 JSON (proves proxy + service discovery); dashboard shows OTel logs/metrics from each Java service (proves the agent + `OTEL_*` env).
