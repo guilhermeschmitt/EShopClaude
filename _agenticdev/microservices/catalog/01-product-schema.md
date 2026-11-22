@@ -88,7 +88,7 @@ Plus the index `ix_product_category` on `(category)`. There is no category table
 Nothing in basket, ordering or the storefront changes.
 
 ## Definition of Done
-Run every check from the repository root unless it says otherwise. `<postgres-container>` is the postgres container name from `docker ps`, and `<catalog-port>` is catalog's HTTP port from the dashboard.
+Run every check from the repository root unless it says otherwise. `<postgres-container>` is the postgres container name from `docker ps`, and `<catalog-port>` is catalog's HTTP port from the dashboard. `<psql>` is `docker exec -i <postgres-container> sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U postgres -d catalogdb'`, with the SQL piped on stdin (Aspire's Postgres asks for a password even inside its own container).
 
 1. **AppHost build:** in `src/`, `npm run build` exits 0 with no eslint or tsc errors.
 2. **Tests:** with Docker running, `mvn -f src/java-back/catalog/pom.xml test` prints `BUILD SUCCESS`, and the report lists `CatalogApplicationTests` and `ProductRepositoryTests` with 0 failures and 0 errors.
@@ -101,12 +101,12 @@ Run every check from the repository root unless it says otherwise. `<postgres-co
 6. **No leaks to other services:** dashboard → basket and ordering → details → Environment show no `SPRING_DATASOURCE_*` and no `ConnectionStrings__catalogdb`.
 7. **Migration ran:** dashboard → catalog → Console logs contain Flyway's `Successfully applied 1 migration to schema "public", now at version v1`.
 8. **DB health:** `curl http://localhost:<catalog-port>/health` returns `{"status":"UP"}`. The datasource health indicator is included now that JPA is on the classpath.
-9. **Table shape:** `docker exec <postgres-container> psql -U postgres -d catalogdb -c "\d product"` shows:
+9. **Table shape:** `echo '\d product' | <psql>` shows:
    - the five columns with the types and nullability from Data model
    - `product_pkey`, `ix_product_category` and a check constraint on `price >= 0`
-10. **Migration history:** `docker exec <postgres-container> psql -U postgres -d catalogdb -c "select version, success from flyway_schema_history"` returns exactly one row, `1 | t`.
-11. **Empty table:** `docker exec <postgres-container> psql -U postgres -d catalogdb -c "select count(*) from product"` returns `0`.
-12. **Price constraint:** `docker exec <postgres-container> psql -U postgres -d catalogdb -c "insert into product(name, price, category) values ('x', -1, 'c')"` fails with `violates check constraint`.
+10. **Migration history:** `echo "select version, success from flyway_schema_history" | <psql>` returns exactly one row, `1 | t`.
+11. **Empty table:** `echo "select count(*) from product" | <psql>` returns `0`.
+12. **Price constraint:** `echo "insert into product(name, price, category) values ('x', -1, 'c')" | <psql>` fails with `violates check constraint`.
 13. **pgAdmin:** catalogdb → Schemas → public → Tables lists `product` and `flyway_schema_history`.
 
 ## References
