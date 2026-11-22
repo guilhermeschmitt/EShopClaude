@@ -2,11 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Source of truth
+## Architecture rules
 
-- `_agenticdev/PROJECT.md` defines the system's behavior: APIs, data model, checkout flow, env contract and what is out of scope. Read the relevant section before you implement anything.
-- `_agenticdev/PLAN.md` orders the work into numbered steps (e.g. `3.1`). Each step has its own **Verify** list.
-- Workflow: one step = one branch off `main`, named `feature/<step-id>-<slug>`. Merge only when that step's Verify list passes. Don't add features listed as out of scope in PROJECT.md §9 (auth, retries, gateway, events, stock, order status, and so on).
+- Three microservices (Catalog, Basket, Ordering) plus a Vue 3 storefront, orchestrated by the Aspire AppHost.
+- Database per service: one PostgreSQL server with `catalogdb` (Catalog) and `orderingdb` (Ordering), and Redis for Basket. No service reads another service's database.
+- Basket owns and orchestrates checkout. Ordering only persists and serves orders.
+- Services talk over synchronous HTTP through Aspire service discovery. No API gateway, no message broker, no events.
+- Login, identity, payments and deployment are out of scope (PROJECT.md §9). Don't propose them.
+
+## Workflow
+
+- Scope and behavior live in `_agenticdev/PROJECT.md`, and the build order (numbered steps, each with a **Verify** list) lives in `_agenticdev/PLAN.md`. Read the relevant section before implementing. Reference these files; don't copy them.
+- Foundation work is committed on `main`. From the first spec on, one spec = one sub-feature on its own branch off `main` (`feature/<step-id>-<slug>`), merged with a pull request.
+- Before committing, everything must build (`npm run build` in `src/`), `mvn test` must pass for every Java service you touched, and `aspire run` must start every resource healthy.
+- Merge only when the step's **Verify** list in PLAN.md passes.
 
 ## Commands
 
