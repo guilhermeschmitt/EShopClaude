@@ -1,6 +1,6 @@
 # catalog 05 — list categories
 
-**Status:** Not started
+**Status:** In progress
 
 ## Goal
 Return the distinct product categories so the storefront can offer a category filter.
