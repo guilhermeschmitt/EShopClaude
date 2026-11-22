@@ -1,6 +1,6 @@
 # catalog 01 — product schema
 
-**Status:** Not started
+**Status:** Done
 
 ## Goal
 Give Catalog its own database: wire `catalog` to `catalogdb` in the AppHost and create the empty `product` table through Flyway, with the `Product` entity and repository that later specs build on.
