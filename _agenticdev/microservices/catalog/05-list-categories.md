@@ -1,6 +1,6 @@
 # catalog 05 — list categories
 
-**Status:** In progress
+**Status:** Done
 
 ## Goal
 Return the distinct product categories so the storefront can offer a category filter.
@@ -9,8 +9,8 @@ Return the distinct product categories so the storefront can offer a category fi
 - `catalog/02-seed-products`
 
 ## Scope
-- [ ] `GET /categories` → `string[]`, distinct and sorted.
-- [ ] Test asserts the seeded categories in sorted order.
+- [x] `GET /categories` → `string[]`, distinct and sorted.
+- [x] Test asserts the seeded categories in sorted order.
 
 ## Explicit non-goals
 - No category table, no counts per category.
