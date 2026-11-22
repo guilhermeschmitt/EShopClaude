@@ -428,3 +428,9 @@ FodyWeavers.xsd
 #*.lscache
 # Maven build output
 target/
+
+# AppHost TypeScript build output
+src/dist/
+
+# Playwright MCP snapshots and logs
+.playwright-mcp/

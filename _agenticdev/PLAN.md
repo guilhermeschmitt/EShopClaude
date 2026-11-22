@@ -59,19 +59,21 @@ Section refs like (§4.1) point to PROJECT.md.
 
 ## Phase 2 — Data persistence
 
-### 2.1 PostgreSQL, databases and pgAdmin
-- Add `Aspire.Hosting.PostgreSQL` to `aspire.config.json`.
-- `postgres` resource with `catalogdb` and `orderingdb`, `withPgAdmin()`.
+### 2.1 Data infrastructure in the AppHost
+Infrastructure only: no reference, waitFor or env var between the APIs and these resources (that is 2.2), and no Java project changes (the Spring data starters are added in 2.3, 2.4 and 3.4, together with the wiring they need to start).
+- **2.1.1** Add `Aspire.Hosting.PostgreSQL` and `Aspire.Hosting.Redis` (same version as the other Aspire packages) to `packages` in `aspire.config.json`; regenerate `src/.aspire/modules/` and confirm `addPostgres`, `addDatabase`, `withPgAdmin` and `addRedis` exist in `aspire.mts`.
+- **2.1.2** `postgres` server resource with the `catalogdb` and `orderingdb` databases.
+- **2.1.3** `withPgAdmin()` on `postgres`.
+- **2.1.4** `redis` resource, no data volume.
+- **Projects:** AppHost.
+- **Verify:** AppHost build; `aspire run` shows postgres, catalogdb, orderingdb, pgAdmin and redis healthy, and catalog, basket, ordering still healthy; catalog, basket and ordering have no `ConnectionStrings__*`, `SPRING_DATASOURCE_*` or `SPRING_DATA_REDIS_*` env vars; pgAdmin lists `catalogdb` and `orderingdb`; `redis-cli ping` in the redis container returns `PONG` and no volume is mounted.
+
+### 2.2 Wire services to the data resources
 - catalog → catalogdb, ordering → orderingdb (reference + waitFor).
 - Build the JDBC env contract from endpoint + parameters: `SPRING_DATASOURCE_URL` (`jdbc:postgresql://host:port/<db>`), `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` (§7). Check the generated TS API in `src/.aspire/modules/` for the endpoint/expression helpers before writing it.
-- **Projects:** AppHost.
-- **Verify:** AppHost build; `aspire run` shows postgres and pgAdmin healthy; pgAdmin lists `catalogdb` and `orderingdb`; dashboard resource details show the three `SPRING_DATASOURCE_*` vars on catalog and ordering with a valid JDBC URL.
-
-### 2.2 Redis
-- Add `Aspire.Hosting.Redis` to `aspire.config.json`; `redis` resource.
 - basket → redis (reference + waitFor) with `SPRING_DATA_REDIS_HOST` / `SPRING_DATA_REDIS_PORT`. Only basket references Redis.
 - **Projects:** AppHost.
-- **Verify:** AppHost build; `aspire run` shows redis healthy; basket env shows the two Redis vars; catalog and ordering have none.
+- **Verify:** AppHost build; `aspire run` all healthy; dashboard resource details show the three `SPRING_DATASOURCE_*` vars on catalog and ordering with a valid JDBC URL; basket env shows the two Redis vars; catalog and ordering have none.
 
 ### 2.3 Catalog schema and seed data
 - Add Spring Data JPA, Flyway, PostgreSQL driver and Testcontainers (postgresql) to catalog; `spring.jpa.hibernate.ddl-auto=validate`.
@@ -117,7 +119,7 @@ Section refs like (§4.1) point to PROJECT.md.
 ### Basket.Api
 
 #### 3.4 Basket storage (Redis only, no service calls)
-- Spring Data Redis; key `basket:{buyerId}` holding JSON `{ buyerId, items[] }`, no TTL.
+- Spring Data Redis (add `spring-boot-starter-data-redis` and Testcontainers to basket); key `basket:{buyerId}` holding JSON `{ buyerId, items[] }`, no TTL.
 - `GET /basket/{buyerId}` → basket with computed `total` (empty basket if the key is missing).
 - `PUT /basket/{buyerId}/items/{productId}` `{ quantity }` → set; `0` removes; 404 if the line is missing.
 - **Projects:** Basket.Api.

@@ -24,6 +24,8 @@
     }
   },
   "packages": {
-    "Aspire.Hosting.JavaScript": "17.0.0"
+    "Aspire.Hosting.JavaScript": "17.0.0",
+    "Aspire.Hosting.PostgreSQL": "17.0.0",
+    "Aspire.Hosting.Redis": "17.0.0"
   }
 }

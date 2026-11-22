@@ -14,4 +14,12 @@ for (const name of ['catalog', 'basket', 'ordering']) {
         .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE');
 }
 
+// Data infrastructure: one PostgreSQL server (one database per service) with pgAdmin, and Redis for Basket.
+// Not wired to the services yet (PLAN.md 2.2).
+const postgres = await builder.addPostgres('postgres').withPgAdmin();
+await postgres.addDatabase('catalogdb');
+await postgres.addDatabase('orderingdb');
+
+await builder.addRedis('redis');
+
 await builder.build().run();
