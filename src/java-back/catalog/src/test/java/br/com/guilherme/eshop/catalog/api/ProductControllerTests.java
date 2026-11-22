@@ -16,8 +16,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
 import br.com.guilherme.eshop.catalog.TestcontainersConfiguration;
+import br.com.guilherme.eshop.catalog.domain.Product;
+import br.com.guilherme.eshop.catalog.repository.ProductRepository;
 
-/** GET /products against the V2 seed: 24 products, 6 in each of Apparel, Bags, Drinkware, Stationery. */
+/** GET /products and GET /products/{id} against the V2 seed: 24 products, 6 in each of Apparel, Bags, Drinkware, Stationery. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -25,6 +27,31 @@ class ProductControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Test
+    void getByIdReturnsTheProduct() throws Exception {
+        Long id = productRepository.findAll().stream()
+                .filter(p -> p.getName().equals("Ceramic Mug"))
+                .map(Product::getId)
+                .findFirst()
+                .orElseThrow();
+
+        mockMvc.perform(get("/products/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value("Ceramic Mug"))
+                .andExpect(jsonPath("$.description").value("350 ml glazed ceramic mug, dishwasher safe."))
+                .andExpect(jsonPath("$.price").value(11.90))
+                .andExpect(jsonPath("$.category").value("Drinkware"));
+    }
+
+    @Test
+    void getUnknownIdIsNotFound() throws Exception {
+        mockMvc.perform(get("/products/99999")).andExpect(status().isNotFound());
+    }
 
     @Test
     void defaultPageIsFirstEightByName() throws Exception {

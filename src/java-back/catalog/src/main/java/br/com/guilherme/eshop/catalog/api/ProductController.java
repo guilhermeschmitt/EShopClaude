@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,5 +54,13 @@ public class ProductController {
         // id breaks ties between equal names so paging is stable.
         PageRequest pageable = PageRequest.of(page, size, Sort.by("name").and(Sort.by("id")));
         return PageDto.from(productRepository.findAll(spec, pageable).map(ProductDto::from));
+    }
+
+    /** One product by id; 404 when it doesn't exist. */
+    @GetMapping("/products/{id}")
+    public ProductDto get(@PathVariable long id) {
+        return productRepository.findById(id)
+                .map(ProductDto::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "product " + id + " not found"));
     }
 }
