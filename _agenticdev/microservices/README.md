@@ -4,7 +4,7 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 
 | Service | Spec | Branch | Depends on | Status |
 |---|---|---|---|---|
-| catalog | [01-product-schema](catalog/01-product-schema.md) | `feature/catalog-01-product-schema` | nothing | Not started |
+| catalog | [01-product-schema](catalog/01-product-schema.md) | `feature/catalog-01-product-schema` | nothing | Done |
 | catalog | [02-seed-products](catalog/02-seed-products.md) | `feature/catalog-02-seed-products` | catalog/01 | Not started |
 | catalog | [03-list-products](catalog/03-list-products.md) | `feature/catalog-03-list-products` | catalog/02 | Not started |
 | catalog | [04-get-product](catalog/04-get-product.md) | `feature/catalog-04-get-product` | catalog/02 | Not started |
