@@ -68,78 +68,42 @@ Infrastructure only: no reference, waitFor or env var between the APIs and these
 - **Projects:** AppHost.
 - **Verify:** AppHost build; `aspire run` shows postgres, catalogdb, orderingdb, pgAdmin and redis healthy, and catalog, basket, ordering still healthy; catalog, basket and ordering have no `ConnectionStrings__*`, `SPRING_DATASOURCE_*` or `SPRING_DATA_REDIS_*` env vars; pgAdmin lists `catalogdb` and `orderingdb`; `redis-cli ping` in the redis container returns `PONG` and no volume is mounted.
 
-### 2.2 Wire services to the data resources
-- catalog → catalogdb, ordering → orderingdb (reference + waitFor).
-- Build the JDBC env contract from endpoint + parameters: `SPRING_DATASOURCE_URL` (`jdbc:postgresql://host:port/<db>`), `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` (§7). Check the generated TS API in `src/.aspire/modules/` for the endpoint/expression helpers before writing it.
-- basket → redis (reference + waitFor) with `SPRING_DATA_REDIS_HOST` / `SPRING_DATA_REDIS_PORT`. Only basket references Redis.
-- **Projects:** AppHost.
-- **Verify:** AppHost build; `aspire run` all healthy; dashboard resource details show the three `SPRING_DATASOURCE_*` vars on catalog and ordering with a valid JDBC URL; basket env shows the two Redis vars; catalog and ordering have none.
-
-### 2.3 Catalog schema and seed data
-- Add Spring Data JPA, Flyway, PostgreSQL driver and Testcontainers (postgresql) to catalog; `spring.jpa.hibernate.ddl-auto=validate`.
-- `db/migration/V1__create_product.sql` (§4.1 table) and `V2__seed_products.sql` (~24 products across 3–4 categories).
-- `Product` entity + `ProductRepository` (no endpoints yet).
-- **Projects:** Catalog.Api.
-- **Verify:** `mvn test` — Testcontainers test that Flyway applies and the repository returns the seeded count; `aspire run` → catalog healthy (JPA validate passes); pgAdmin `SELECT category, count(*) FROM product GROUP BY 1` in catalogdb.
-
-### 2.4 Ordering schema
-- Add JPA, Flyway, PostgreSQL driver and Testcontainers to ordering; `ddl-auto=validate`.
-- `V1__create_orders.sql`: `orders` (index on `buyer_id`) and `order_item` (FK → orders) (§4.3).
-- `Order` / `OrderItem` entities and `OrderRepository`.
-- **Projects:** Ordering.Api.
-- **Verify:** `mvn test` — repository round-trip (save an order with items, read it back); `aspire run` → ordering healthy; pgAdmin shows both tables in orderingdb.
+Steps 2.2–2.4 (wiring each service to its data store, its schema and the catalog seed) moved to the service specs in Phase 3.
 
 ---
 
 ## Phase 3 — Microservices
 
-### Catalog.Api
+Each service is built as a series of small specs, one feature branch each ([WOW.md](WOW.md)). The specs hold the scope and the Definition of Done; the status table is in [microservices/README.md](microservices/README.md).
 
-#### 3.1 Catalog read API
-- `GET /products?category=&q=&page=0&size=8` → `{ items, page, size, totalItems, totalPages }`; `q` case-insensitive on name, `category` exact, ordered by name.
-- `GET /products/{id}` → `Product` or 404.
-- `GET /categories` → distinct sorted `string[]`.
-- DTO records in `api`.
-- **Projects:** Catalog.Api.
-- **Verify:** `mvn test` (controller happy paths + filter/search/paging + 404, with Testcontainers); `aspire run`; HTTP via proxy: `/api/catalog/products?page=2`, `?category=…`, `?q=…`, `/api/catalog/products/1`, `/api/catalog/products/99999` (404), `/api/catalog/categories`; Trace: catalog → Postgres span for each request.
+**Build order:** specs run in number order inside a service. Catalog, Ordering and basket 01 don't depend on each other. basket 02 needs catalog 04, and basket 04 needs ordering 02 and 04.
 
-### Ordering.Api
+### Catalog
+- **Owns:** products in `catalogdb` and the read-only product API: a filtered, searchable, paged list, a product by id, and the categories (§4.1).
+- **Specs:** [microservices/catalog/](microservices/catalog/)
+  1. `01-product-schema.md`
+  2. `02-seed-products.md`
+  3. `03-list-products.md`
+  4. `04-get-product.md`
+  5. `05-list-categories.md`
 
-#### 3.2 Create order
-- `POST /orders` `{ buyerId, items[] }`: validate a non-empty item list and quantity > 0 (400 otherwise), compute `total`, set `created_at`, persist; 201 with `Order`.
-- **Projects:** Ordering.Api.
-- **Verify:** `mvn test` (201 + computed total; 400 on empty list / quantity 0); HTTP via proxy `POST /api/ordering/orders`; pgAdmin shows rows in `orders` and `order_item`.
+### Ordering
+- **Owns:** orders in `orderingdb`. It persists and serves orders, and never calls another service (§4.3).
+- **Specs:** [microservices/ordering/](microservices/ordering/)
+  1. `01-order-schema.md`
+  2. `02-create-order.md`
+  3. `03-list-buyer-orders.md`
+  4. `04-get-order.md`
 
-#### 3.3 Query orders
-- `GET /orders?buyerId=` → `OrderSummary[]` (`id, createdAt, total, itemCount`), newest first, not paged.
-- `GET /orders/{id}` → `Order` with items, or 404.
-- **Projects:** Ordering.Api.
-- **Verify:** `mvn test` (newest-first ordering, itemCount, 404); HTTP via proxy for the order created in 3.2; Trace: ordering → Postgres.
+### Basket
+- **Owns:** baskets in Redis and the checkout flow. It calls Catalog when an item is added and Ordering at checkout (§4.2, §5).
+- **Specs:** [microservices/basket/](microservices/basket/)
+  1. `01-read-basket.md`
+  2. `02-add-item.md`
+  3. `03-update-item-quantity.md`
+  4. `04-checkout.md`
 
-### Basket.Api
-
-#### 3.4 Basket storage (Redis only, no service calls)
-- Spring Data Redis (add `spring-boot-starter-data-redis` and Testcontainers to basket); key `basket:{buyerId}` holding JSON `{ buyerId, items[] }`, no TTL.
-- `GET /basket/{buyerId}` → basket with computed `total` (empty basket if the key is missing).
-- `PUT /basket/{buyerId}/items/{productId}` `{ quantity }` → set; `0` removes; 404 if the line is missing.
-- **Projects:** Basket.Api.
-- **Verify:** `mvn test` with Testcontainers Redis (empty basket, update, remove, 404); `aspire run`; HTTP via proxy `GET /api/basket/basket/<uuid>` returns an empty basket.
-
----
-
-## Phase 4 — Service communication
-
-#### 4.1 Basket → Catalog: add item with product lookup
-- `client/CatalogClient` (Spring `RestClient`, base URL `catalog.url`) calling `GET /products/{id}`.
-- `POST /basket/{buyerId}/items` `{ productId, quantity=1 }`: look up the product (404 if Catalog returns 404), snapshot name + price, add the line or increment it.
-- **Projects:** Basket.Api.
-- **Verify:** `mvn test` with `MockRestServiceServer` (add new line, increment existing, unknown product → 404); HTTP via proxy: add the same product twice plus another, then GET shows snapshot prices and total; Trace: basket → catalog → Postgres as one trace.
-
-#### 4.2 Basket → Ordering: checkout
-- `client/OrderingClient` (`RestClient`, base URL `ordering.url`) calling `POST /orders`.
-- `POST /basket/{buyerId}/checkout`: read basket (400 if empty/missing) → POST `{ buyerId, items }` with snapshot prices → only after 201 delete `basket:{buyerId}` → 201 `{ orderId }`. An Ordering failure propagates as 5xx and leaves the basket intact (§5). No retries or compensation.
-- **Projects:** Basket.Api.
-- **Verify:** `mvn test` (success clears the basket; Ordering 500 → 5xx and basket kept; empty → 400); HTTP via proxy: fill basket, checkout, GET basket is empty, `GET /api/ordering/orders/{orderId}` matches; failure check: stop `ordering` in the dashboard, checkout → 5xx, basket unchanged; Trace: single checkout trace basket → ordering → Postgres.
+Where the old steps went: 2.2 → catalog 01, ordering 01, basket 01; 2.3 → catalog 01–02; 2.4 → ordering 01; 3.1 → catalog 03–05; 3.2–3.3 → ordering 02–04; 3.4 → basket 01 and 03; Phase 4 (service communication) → basket 02 (4.1) and basket 04 (4.2).
 
 ---
 

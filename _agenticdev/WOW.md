@@ -28,9 +28,10 @@ _agenticdev/
    └─ <service>/
       └─ NN-<short-name>.md  one spec
 ```
-- Specs are numbered per service (`01`, `02`, …) and are never renumbered.
+- Specs are numbered per service in build order (`01`, `02`, …). Once a spec is merged, its number never changes.
 - Every spec starts as a copy of [templates/spec-template.md](templates/spec-template.md) and keeps its sections.
-- `microservices/README.md` holds the status table for all specs.
+- A spec's Definition of Done lists checks you can run: the exact command or request and its expected result. "It works" is not a Definition of Done.
+- `microservices/README.md` holds the status table for all specs. It is updated in the same change as any spec that is added, split or renamed.
 
 ## The cycle, per spec
 1. **Pick** the next spec: the lowest-numbered spec in its service whose dependencies are all Done.
