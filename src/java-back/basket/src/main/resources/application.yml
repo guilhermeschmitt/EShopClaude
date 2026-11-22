@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: basket
+
+# Health endpoint at /health (the MapDefaultEndpoints equivalent).
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health

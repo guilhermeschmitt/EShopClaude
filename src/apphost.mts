@@ -2,19 +2,16 @@ import { createBuilder } from './.aspire/modules/aspire.mjs';
 
 const builder = await createBuilder();
 
-// Run the Express API and expose its HTTP endpoint externally.
-const app = await builder
-    .addNodeApp("app", "./api", "src/index.ts")
-    .withHttpEndpoint({ env: "PORT" })
-    .withExternalHttpEndpoints();
-
-// Run the Vite frontend after the API and inject the API URL for local proxying.
-const frontend = await builder
-    .addViteApp("frontend", "./frontend")
-    .withReference(app)
-    .waitFor(app);
-
-// Bundle the frontend build output into the API container for publish/deploy.
-await app.publishWithContainerFiles(frontend, "./static");
+// Java microservices: each built from its own Dockerfile, listening on container port 8080.
+// withOtlpExporter injects OTEL_* env vars for the OpenTelemetry Java agent (the AddServiceDefaults equivalent).
+// The JVM ignores SSL_CERT_DIR, so hand the agent Aspire's dev-cert bundle to trust the HTTPS OTLP endpoint.
+for (const name of ['catalog', 'basket', 'ordering']) {
+    await builder
+        .addDockerfile(name, `./java-back/${name}`)
+        .withHttpEndpoint({ targetPort: 8080 })
+        .withHttpHealthCheck({ path: '/health' })
+        .withOtlpExporter()
+        .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE');
+}
 
 await builder.build().run();

@@ -15,6 +15,7 @@ Browser ──► storefront (Vue 3 + Vite, vue-base)
 
 pgAdmin ──► Postgres (catalogdb, orderingdb)
 ```
+- **Layout:** `src/` holds the AppHost (`apphost.mts`, `aspire.config.json`). The back-end services live in `src/java-back/{catalog,basket,ordering}/` and the front-end in `src/vue-front/storefront/`.
 - **Services:** catalog, basket and ordering use Java 21, Spring Boot and Maven, with plain Spring Boot starters and no shared base library. Each one runs in a Docker container built from its own Dockerfile.
 - **Storefront:** Vue 3 with Vite and vue-base. There is no Blazor. The starter's `src/api` and `src/frontend` are deleted.
 - **Data:** Catalog and Ordering share one PostgreSQL server, and each has its own database: `catalogdb` and `orderingdb`. Basket stores baskets in Redis. pgAdmin is attached to the PostgreSQL server so the data in both databases can be browsed.
@@ -109,7 +110,7 @@ If any step fails, the error propagates as a 5xx, the basket stays intact and th
   - `postgres` with the databases `catalogdb` and `orderingdb`, and pgAdmin attached through `withPgAdmin()`
   - `redis`
   - `catalog`, `basket` and `ordering` through `addDockerfile`, with an HTTP endpoint on container port 8080
-  - `storefront` through `addViteApp("./storefront")`, with external HTTP endpoints
+  - `storefront` through `addViteApp("./vue-front/storefront")`, with external HTTP endpoints
 - References and waits:
   - catalog → catalogdb
   - ordering → orderingdb
@@ -119,7 +120,7 @@ If any step fails, the error propagates as a 5xx, the basket stays intact and th
 - **Env contract for the Java services:** Catalog and Ordering get `SPRING_DATASOURCE_URL` (`jdbc:postgresql://…/catalogdb` or `…/orderingdb`), `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`. Basket gets `SPRING_DATA_REDIS_HOST` and `SPRING_DATA_REDIS_PORT`. The AppHost builds these from the resource endpoints and parameters, because Aspire's default connection-string format is not JDBC. Basket also reads `services__catalog__http__0` and `services__ordering__http__0`, mapped in `application.yml` to `catalog.url` and `ordering.url`.
 
 ## 8. Java service conventions (each of catalog, basket and ordering)
-- **Project:** a standalone Maven project at `src/{service}/` with `spring-boot-starter-parent` as its parent. The base package is `br.com.guilherme.eshop.{service}`, with the layers `api` (controllers and DTO records), `domain`, `repository` and `client` (Basket only, using Spring `RestClient`).
+- **Project:** a standalone Maven project at `src/java-back/{service}/` with `spring-boot-starter-parent` as its parent. The base package is `br.com.guilherme.eshop.{service}`, with the layers `api` (controllers and DTO records), `domain`, `repository` and `client` (Basket only, using Spring `RestClient`).
 - **Security:** no Spring Security dependency, so every endpoint is open. There is no login.
 - **Database:** Catalog and Ordering use Spring Data JPA. Flyway migrations live in `src/main/resources/db/migration`, and `spring.jpa.hibernate.ddl-auto=validate`. Basket uses only Spring Data Redis and has no JPA or JDBC dependencies.
 - **Dockerfile:** a multi-stage build.
