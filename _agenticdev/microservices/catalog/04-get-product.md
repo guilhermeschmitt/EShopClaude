@@ -1,6 +1,6 @@
 # catalog 04 — get product
 
-**Status:** In progress
+**Status:** Done
 
 ## Goal
 Return a single product by id. This is the lookup Basket uses to validate a product and snapshot its name and price when an item is added.
@@ -9,8 +9,8 @@ Return a single product by id. This is the lookup Basket uses to validate a prod
 - `catalog/02-seed-products`
 
 ## Scope
-- [ ] `GET /products/{id}` → `Product`, or 404 when the id doesn't exist.
-- [ ] Tests: found and 404.
+- [x] `GET /products/{id}` → `Product`, or 404 when the id doesn't exist.
+- [x] Tests: found and 404.
 
 ## Explicit non-goals
 - No changes to the list endpoint and no write operations.
