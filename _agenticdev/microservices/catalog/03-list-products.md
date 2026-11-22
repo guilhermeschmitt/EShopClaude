@@ -1,6 +1,6 @@
 # catalog 03 — list products
 
-**Status:** Not started
+**Status:** In progress
 
 ## Goal
 Let clients browse the catalog: a paged product list that can be filtered by category and searched by name. Filter, search and paging stay in one spec because they are one endpoint with one query and one response shape.
