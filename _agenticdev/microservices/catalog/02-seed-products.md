@@ -1,6 +1,6 @@
 # catalog 02 — seed products
 
-**Status:** Not started
+**Status:** In progress
 
 ## Goal
 Load sample products on first start so the catalog has data to browse, and enough of it (about 24 products) that paging is visible.

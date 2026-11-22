@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 import br.com.guilherme.eshop.catalog.TestcontainersConfiguration;
+import br.com.guilherme.eshop.catalog.domain.Product;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -23,16 +24,26 @@ class ProductRepositoryTests {
     private ProductRepository productRepository;
 
     @Test
-    void flywayAppliedV1() {
+    void flywayAppliedV2() {
         MigrationInfo current = flyway.info().current();
 
         assertThat(current).isNotNull();
-        assertThat(current.getVersion().getVersion()).isEqualTo("1");
+        assertThat(current.getVersion().getVersion()).isEqualTo("2");
         assertThat(current.getState()).isEqualTo(MigrationState.SUCCESS);
     }
 
     @Test
-    void productTableStartsEmpty() {
-        assertThat(productRepository.count()).isZero();
+    void seedLoadsProducts() {
+        assertThat(productRepository.count()).isEqualTo(24);
+    }
+
+    @Test
+    void seedHasFourDistinctCategories() {
+        long categories = productRepository.findAll().stream()
+                .map(Product::getCategory)
+                .distinct()
+                .count();
+
+        assertThat(categories).isEqualTo(4);
     }
 }
