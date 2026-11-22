@@ -13,9 +13,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Workflow
 
 - Scope and behavior live in `_agenticdev/PROJECT.md`, and the build order (numbered steps, each with a **Verify** list) lives in `_agenticdev/PLAN.md`. Read the relevant section before implementing. Reference these files; don't copy them.
-- Foundation work is committed on `main`. From the first spec on, one spec = one sub-feature on its own branch off `main` (`feature/<step-id>-<slug>`), merged with a pull request.
 - Before committing, everything must build (`npm run build` in `src/`), `mvn test` must pass for every Java service you touched, and `aspire run` must start every resource healthy.
-- Merge only when the step's **Verify** list in PLAN.md passes.
+
+## Way of working
+
+The spec-driven delivery rules (specs, branches, merges and the per-spec cycle) live in this file:
+@_agenticdev/WOW.md
 
 ## Commands
 

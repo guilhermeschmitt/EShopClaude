@@ -4,7 +4,7 @@ Source of truth: [PROJECT.md](PROJECT.md). This plan orders the work; PROJECT.md
 Section refs like (§4.1) point to PROJECT.md.
 
 ## How to use this plan
-- **One step = one feature branch** off `main`, named `feature/<step-id>-<slug>` (e.g. `feature/3.1-catalog-api`). Merge to `main` only when the step's **Verify** list passes.
+- Branching, merging and the per-spec cycle follow [WOW.md](WOW.md).
 - **Projects** in this plan:
 
   | Name | Path | Aspire resource |
