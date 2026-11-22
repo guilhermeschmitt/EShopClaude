@@ -1,0 +1,49 @@
+### Catalog API — manual requests (VS Code REST Client / IntelliJ HTTP Client)
+# Standalone the service listens on 8080. Under `aspire run` the host port is
+# dynamic: copy the catalog endpoint from the Aspire dashboard into @baseUrl.
+@baseUrl = http://localhost:51392
+
+### Root — 200 text/plain "Catalog API is running."
+GET {{baseUrl}}/
+
+### Health — 200 {"status":"UP"}
+GET {{baseUrl}}/health
+
+### Categories — 200 ["Apparel","Bags","Drinkware","Stationery"]
+GET {{baseUrl}}/categories
+
+### Products, default paging (page=0, size=8) — 200, totalItems 24, totalPages 3
+GET {{baseUrl}}/products
+
+### Products, second page of 5
+GET {{baseUrl}}/products?page=1&size=5
+
+### Products filtered by category — 200, 6 items
+GET {{baseUrl}}/products?category=Bags
+
+### Products by name search (case-insensitive) — 200, mugs only
+GET {{baseUrl}}/products?q=MUG
+
+### Products by category + name search
+GET {{baseUrl}}/products?category=Apparel&q=shirt
+
+### Products, max page size — 200, all 24 items
+GET {{baseUrl}}/products?size=100
+
+### Invalid: negative page — 400
+GET {{baseUrl}}/products?page=-1
+
+### Invalid: size above max (100) — 400
+GET {{baseUrl}}/products?size=101
+
+### Invalid: size zero — 400
+GET {{baseUrl}}/products?size=0
+
+### Product by id — 200
+GET {{baseUrl}}/products/1
+
+### Product not found — 404
+GET {{baseUrl}}/products/999999
+
+### Invalid id (not a number) — 400
+GET {{baseUrl}}/products/abc
