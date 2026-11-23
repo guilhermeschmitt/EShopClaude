@@ -1,0 +1,55 @@
+### Ordering API — manual requests (VS Code REST Client / IntelliJ HTTP Client)
+# Standalone the service listens on 8080. Under `aspire run` the host port is
+# dynamic: copy the ordering endpoint from the Aspire dashboard into @baseUrl.
+@baseUrl = http://localhost:8080
+
+### Root — 200 text/plain "Ordering API is running."
+GET {{baseUrl}}/
+
+### Health — 200 {"status":"UP"}
+GET {{baseUrl}}/health
+
+### Create order — 201, total 39.30, 2 items, no Location header
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "buyerId": "11111111-1111-1111-1111-111111111111",
+  "items": [
+    { "productId": 1, "productName": "Mug", "unitPrice": 9.90, "quantity": 2 },
+    { "productId": 2, "productName": "Tee", "unitPrice": 19.50, "quantity": 1 }
+  ]
+}
+
+### Invalid: empty items — 400
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{ "buyerId": "11111111-1111-1111-1111-111111111111", "items": [] }
+
+### Invalid: quantity 0 — 400
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "buyerId": "11111111-1111-1111-1111-111111111111",
+  "items": [{ "productId": 1, "productName": "Mug", "unitPrice": 9.90, "quantity": 0 }]
+}
+
+### Invalid: negative price — 400
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "buyerId": "11111111-1111-1111-1111-111111111111",
+  "items": [{ "productId": 1, "productName": "Mug", "unitPrice": -0.01, "quantity": 1 }]
+}
+
+### Invalid: price with three decimals — 400
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "buyerId": "11111111-1111-1111-1111-111111111111",
+  "items": [{ "productId": 1, "productName": "Mug", "unitPrice": 9.999, "quantity": 1 }]
+}
