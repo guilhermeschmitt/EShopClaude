@@ -38,11 +38,11 @@ _agenticdev/
 2. **Branch:** create `feature/<service>-<NN>-<short-name>` from an up-to-date `main`, and commit the spec file as the first commit.
 3. **Fresh session:** start a new Claude Code session and point it at the spec file only.
 4. **Plan:** enter plan mode, produce the plan, and a human approves it before any code.
-5. **Implement** in auto mode, following the approved plan.
+5. **Implement** in auto mode, following the approved plan, and commit on the branch as you go.
 6. **Verify manually:** run the pre-commit checks below and walk the spec's Definition of Done.
-7. **Commit and merge:** commit on the branch, then on `main` run `git merge --no-ff <branch>`.
-8. **Mark Done** in the spec file and in the status table of `microservices/README.md`.
-9. **Delete** the feature branch (`git branch -d <branch>`).
+7. **Mark Done** on the branch: set the spec's Status to Done with the commit SHA, update its row in the status table of `microservices/README.md`, and commit those two files.
+8. **Merge:** on `main` run `git merge --no-ff <branch>`, so the code and its Done status land together.
+9. **Delete** the feature branch (`git branch -d <branch>`) and push `main`.
 
 ## Ordering rules
 - Specs run in number order inside a service.
