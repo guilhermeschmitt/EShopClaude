@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: ordering
+  # Datasource URL and credentials come from SPRING_DATASOURCE_* (AppHost) or @ServiceConnection (tests).
+  # Flyway owns the schema; Hibernate only validates the entities against it.
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
 
 # Health endpoint at /health (the MapDefaultEndpoints equivalent).
 management:
