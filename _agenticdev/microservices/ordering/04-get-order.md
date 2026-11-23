@@ -1,6 +1,6 @@
 # ordering 04 — get order
 
-**Status:** Not started
+**Status:** Done (df164a2)
 
 ## Goal
 Return one order with its lines, for the storefront's order detail page (`/orders/:id`, PROJECT.md §6) and so basket/04 can confirm what checkout created.
