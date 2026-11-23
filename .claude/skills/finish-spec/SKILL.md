@@ -3,7 +3,7 @@ name: finish-spec
 description: Steps 5–9 of the WOW.md cycle for one spec — implement it on its feature branch following the approved plan, verify the build, tests and every Definition of Done line, mark it Done, then (after explicit confirmation) merge --no-ff into main, delete the branch and push main.
 argument-hint: <service> <NN>
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Bash(npm --prefix src run build), Bash(mvn:*)
+allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Bash(npm --prefix src run build), Bash(mvn:*), Bash(docker build src/java-back/*), Bash(docker ps:*), Bash(docker exec -i postgres-* sh -c *psql*), Bash(aspire run:*), Bash(aspire wait:*), Bash(aspire describe:*), Bash(curl -s * http://localhost:*), TaskStop, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_close
 ---
 
 # /finish-spec
@@ -33,7 +33,16 @@ Arguments: `$ARGUMENTS` → `<service> <NN>`. Spec: `_agenticdev/microservices/<
 3. **Verify.** Stop at the first failure and report it.
    - `npm --prefix src run build` (the AppHost build in CLAUDE.md) must pass.
    - `mvn -f src/java-back/<service>/pom.xml test` must pass.
-   - Walk the spec's **Definition of Done** line by line. Run every check you can run yourself. For each one you cannot (`aspire run` all healthy, dashboard env vars, a table or row in pgAdmin, a request in a `.http` file), ask me — one line per check, with the exact thing to look at and the expected result — and wait. Any "no" stops here.
+   - `docker build src/java-back/<service>` must exit 0.
+   - **Start the solution.** From `src/`, run `aspire run` in the background. Wait with `aspire wait <resource> --timeout 240 --non-interactive` for each resource the spec lists, every one must exit 0. Then `aspire describe --non-interactive` must show each as Running / Healthy; read each service's URL from it (the host port changes every run).
+   - **Walk the spec's Definition of Done line by line** and run each check yourself, recording the exact command and its output:
+     - HTTP requests: `curl -s` against `http://localhost:<port>` only.
+     - Database: `docker exec -i <postgres-container> sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U postgres -d <db>'` with the SQL on stdin. The container is the `postgres-*` one in `docker ps`, never another Postgres on the machine.
+     - pgAdmin: Playwright on the pgAdmin port from `docker ps` (no login under Aspire): expand Servers → Databases → `<db>` → Schemas → public → Tables, select the table, **All Rows**, and read a screenshot saved under `.playwright-mcp/` (git-ignored).
+     - Dashboard-only checks (environment variables, traces): ask me — one line per check, with the exact thing to look at and the expected result — and wait.
+   - If any code changes after a check ran (a fix found while verifying), commit it with a `<service>/<NN>: …` message, update the spec if it described the old behaviour, and re-run every check from the top against a fresh `aspire run`.
+   - **Tear down.** Close the browser and stop the `aspire run` task (TaskStop) before marking Done, also when a check failed.
+   - Any failed check or any "no" from me stops here.
 4. **Mark Done.** Take `git rev-parse --short HEAD`. In the spec set `**Status:** Done (<sha>)`.
 5. **Status table.** Set the same `Done (<sha>)` in this spec's row of `_agenticdev/microservices/README.md`.
 6. **Docs commit.** `git add <spec path> _agenticdev/microservices/README.md`, then `git commit -m "Mark <service>/<NN>-<short-name> as Done"`.
