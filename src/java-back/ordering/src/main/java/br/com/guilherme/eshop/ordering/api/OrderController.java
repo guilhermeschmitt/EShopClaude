@@ -3,6 +3,7 @@ package br.com.guilherme.eshop.ordering.api;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,8 @@ public class OrderController {
     public ResponseEntity<OrderDto> create(@RequestBody CreateOrderRequest request) {
         validate(request);
 
-        Order order = new Order(request.buyerId(), Instant.now(clock));
+        // timestamptz keeps microseconds; truncate so the 201 body matches what is stored.
+        Order order = new Order(request.buyerId(), Instant.now(clock).truncatedTo(ChronoUnit.MICROS));
         for (CreateOrderItem item : request.items()) {
             order.addItem(item.productId(), item.productName(), item.unitPrice(), item.quantity());
         }

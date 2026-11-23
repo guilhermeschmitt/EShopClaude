@@ -40,7 +40,9 @@ import br.com.guilherme.eshop.ordering.repository.OrderRepository;
 class OrderControllerTests {
 
     private static final String BUYER = "11111111-1111-1111-1111-111111111111";
-    private static final String NOW = "2026-01-15T10:00:00Z";
+    /** Nanosecond clock; createdAt is truncated to the microseconds timestamptz stores. */
+    private static final String CLOCK_NOW = "2026-01-15T10:00:00.123456789Z";
+    private static final String NOW = "2026-01-15T10:00:00.123456Z";
 
     private static final String MUG = line("1", "\"Mug\"", "9.90", "2");
     private static final String TEE = line("2", "\"Tee\"", "19.50", "1");
@@ -58,7 +60,7 @@ class OrderControllerTests {
     private TransactionTemplate transactionTemplate;
 
     static Clock clock() {
-        return Clock.fixed(Instant.parse(NOW), ZoneOffset.UTC);
+        return Clock.fixed(Instant.parse(CLOCK_NOW), ZoneOffset.UTC);
     }
 
     @Test

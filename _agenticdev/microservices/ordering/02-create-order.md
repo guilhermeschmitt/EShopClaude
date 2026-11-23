@@ -21,7 +21,7 @@ This is the write side that basket/04 (checkout) calls, and it gives ordering/03
 ## Scope
 - [ ] `POST /orders` with body `CreateOrderRequest { buyerId, items: [{ productId, productName, unitPrice, quantity }] }`.
 - [ ] Validation by hand: every rule in Data model → *Validation* returns 400 and persists nothing. Malformed JSON and a non-UUID `buyerId` also return 400 (Spring's default).
-- [ ] Build the `Order` with `createdAt = Instant.now(clock)`, add each line through `Order.addItem` (so `total = Σ unitPrice × quantity`), save it, and return **201** with `OrderDto`. No `Location` header.
+- [ ] Build the `Order` with `createdAt = Instant.now(clock)` truncated to microseconds (what `timestamptz` stores, so the 201 body matches the row), add each line through `Order.addItem` (so `total = Σ unitPrice × quantity`), save it, and return **201** with `OrderDto`. No `Location` header.
 - [ ] `Clock` bean (`Clock.systemUTC()`) in a small config class.
 - [ ] Request and response DTO records in `api`.
 - [ ] Tests: 201 with the computed total and a pinned `createdAt`, rows persisted, 400 for each validation rule with nothing persisted.
@@ -71,14 +71,14 @@ The rules on name length, decimal places and the `numeric(10,2)` maximum mirror 
 3. **Controller** (`api/OrderController.java`):
    - `@RestController`, with `OrderRepository` and `Clock` injected through the constructor.
    - `@PostMapping("/orders")` taking `@RequestBody CreateOrderRequest` and returning `ResponseEntity<OrderDto>` with status 201.
-   - Steps: validate (a private method that applies the Data model rules in order), build `new Order(buyerId, Instant.now(clock))`, call `addItem(...)` per line, check the total against the maximum, `orderRepository.save(order)`, then return `OrderDto.from(saved)`.
+   - Steps: validate (a private method that applies the Data model rules in order), build `new Order(buyerId, Instant.now(clock).truncatedTo(MICROS))`, call `addItem(...)` per line, check the total against the maximum, `orderRepository.save(order)`, then return `OrderDto.from(saved)`.
    - Remove nothing from `RootController`.
 4. **Tests** (`src/test/java/.../ordering/api/OrderControllerTests.java`, new):
    - `@SpringBootTest` + `@AutoConfigureMockMvc` + `@Import(TestcontainersConfiguration.class)`.
-   - Pin the clock with `@TestBean` (`org.springframework.test.context.bean.override.convention.TestBean`) on a `Clock clock` field, with a static factory that returns `Clock.fixed(Instant.parse("2026-01-15T10:00:00Z"), ZoneOffset.UTC)`.
+   - Pin the clock with `@TestBean` (`org.springframework.test.context.bean.override.convention.TestBean`) on a `Clock clock` field, with a static factory that returns `Clock.fixed(Instant.parse("2026-01-15T10:00:00.123456789Z"), ZoneOffset.UTC)`, so the test also proves the truncation to microseconds.
    - Because the context and container are shared, check persistence with `orderRepository.count()` before and after, never absolute counts.
    - The tests:
-     - `createsOrderAndComputesTotal`: POST buyer `11111111-1111-1111-1111-111111111111` with `{1, "Mug", 9.90, 2}` and `{2, "Tee", 19.50, 1}` → 201. `$.id` is a number, `$.buyerId` is the UUID, `$.createdAt` = `"2026-01-15T10:00:00Z"`, `$.total` = 39.30, `$.items` has 2 entries in request order with the same fields, and there is no `Location` header. `orderRepository.count()` grew by 1. In a `TransactionTemplate`, `findById($.id)` has total `39.30` (`isEqualByComparingTo`) and 2 items.
+     - `createsOrderAndComputesTotal`: POST buyer `11111111-1111-1111-1111-111111111111` with `{1, "Mug", 9.90, 2}` and `{2, "Tee", 19.50, 1}` → 201. `$.id` is a number, `$.buyerId` is the UUID, `$.createdAt` = `"2026-01-15T10:00:00.123456Z"`, `$.total` = 39.30, `$.items` has 2 entries in request order with the same fields, and there is no `Location` header. `orderRepository.count()` grew by 1. In a `TransactionTemplate`, `findById($.id)` has total `39.30` (`isEqualByComparingTo`) and 2 items.
      - `emptyItemsIsBadRequest`: `"items": []` → 400.
      - `missingItemsIsBadRequest`: no `items` → 400.
      - `zeroQuantityIsBadRequest`: quantity `0` → 400.
