@@ -1,6 +1,6 @@
 # ordering 02 — create order
 
-**Status:** Not started
+**Status:** Done (78c10d4)
 
 ## Goal
 Persist an order sent by Basket at checkout. Ordering trusts the prices it receives and computes the total.
