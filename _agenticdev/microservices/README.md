@@ -11,7 +11,7 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | catalog | [05-list-categories](catalog/05-list-categories.md) | `feature/catalog-05-list-categories` | catalog/02 | Done |
 | ordering | [01-order-schema](ordering/01-order-schema.md) | `feature/ordering-01-order-schema` | nothing | Done (b6357af) |
 | ordering | [02-create-order](ordering/02-create-order.md) | `feature/ordering-02-create-order` | ordering/01 | Done (78c10d4) |
-| ordering | [03-list-buyer-orders](ordering/03-list-buyer-orders.md) | `feature/ordering-03-list-buyer-orders` | ordering/02 | Not started |
+| ordering | [03-list-buyer-orders](ordering/03-list-buyer-orders.md) | `feature/ordering-03-list-buyer-orders` | ordering/02 | Done (fb347c9) |
 | ordering | [04-get-order](ordering/04-get-order.md) | `feature/ordering-04-get-order` | ordering/02 | Not started |
 | basket | [01-read-basket](basket/01-read-basket.md) | `feature/basket-01-read-basket` | nothing | Not started |
 | basket | [02-add-item](basket/02-add-item.md) | `feature/basket-02-add-item` | basket/01, catalog/04 | Not started |

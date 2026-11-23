@@ -79,6 +79,35 @@ class OrderRepositoryTests {
         assertThat(order.getTotal()).isEqualByComparingTo("39.30");
     }
 
+    @Test
+    void findSummariesByBuyerIdOrdersNewestFirstAndSumsQuantities() {
+        UUID buyer = UUID.randomUUID();
+        UUID otherBuyer = UUID.randomUUID();
+
+        Long first = orderRepository.save(sampleOrder(buyer, Instant.parse("2026-01-01T10:00:00Z"))).getId();
+        Order second = new Order(buyer, Instant.parse("2026-01-02T10:00:00Z"));
+        second.addItem(1, "Mug", new BigDecimal("9.90"), 1);
+        Long secondId = orderRepository.save(second).getId();
+        Order third = new Order(buyer, Instant.parse("2026-01-03T10:00:00Z"));
+        third.addItem(3, "Cap", new BigDecimal("5.00"), 5);
+        Long thirdId = orderRepository.save(third).getId();
+        Long otherId = orderRepository.save(sampleOrder(otherBuyer, Instant.parse("2026-01-04T10:00:00Z"))).getId();
+
+        var summaries = orderRepository.findSummariesByBuyerId(buyer);
+
+        assertThat(summaries)
+                .extracting(OrderSummary::id, OrderSummary::createdAt, OrderSummary::itemCount)
+                .containsExactly(
+                        tuple(thirdId, Instant.parse("2026-01-03T10:00:00Z"), 5L),
+                        tuple(secondId, Instant.parse("2026-01-02T10:00:00Z"), 1L),
+                        tuple(first, Instant.parse("2026-01-01T10:00:00Z"), 3L));
+        assertThat(summaries)
+                .extracting(OrderSummary::total)
+                .usingComparatorForType(BigDecimal::compareTo, BigDecimal.class)
+                .containsExactly(new BigDecimal("25.00"), new BigDecimal("9.90"), new BigDecimal("39.30"));
+        assertThat(summaries).extracting(OrderSummary::id).doesNotContain(otherId);
+    }
+
     private static Order sampleOrder(UUID buyerId, Instant createdAt) {
         Order order = new Order(buyerId, createdAt);
         order.addItem(1, "Mug", new BigDecimal("9.90"), 2);

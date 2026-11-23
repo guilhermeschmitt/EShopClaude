@@ -53,3 +53,15 @@ Content-Type: application/json
   "buyerId": "11111111-1111-1111-1111-111111111111",
   "items": [{ "productId": 1, "productName": "Mug", "unitPrice": 9.999, "quantity": 1 }]
 }
+
+### List a buyer's orders — 200, [{ id, createdAt, total, itemCount }], newest first
+GET {{baseUrl}}/orders?buyerId=11111111-1111-1111-1111-111111111111
+
+### List for an unknown buyer — 200 []
+GET {{baseUrl}}/orders?buyerId=99999999-9999-9999-9999-999999999999
+
+### List without buyerId — 400
+GET {{baseUrl}}/orders
+
+### List with a non-UUID buyerId — 400
+GET {{baseUrl}}/orders?buyerId=not-a-uuid
