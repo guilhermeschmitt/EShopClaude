@@ -9,7 +9,7 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | catalog | [03-list-products](catalog/03-list-products.md) | `feature/catalog-03-list-products` | catalog/02 | Done |
 | catalog | [04-get-product](catalog/04-get-product.md) | `feature/catalog-04-get-product` | catalog/02 | Done |
 | catalog | [05-list-categories](catalog/05-list-categories.md) | `feature/catalog-05-list-categories` | catalog/02 | Done |
-| ordering | [01-order-schema](ordering/01-order-schema.md) | `feature/ordering-01-order-schema` | nothing | Not started |
+| ordering | [01-order-schema](ordering/01-order-schema.md) | `feature/ordering-01-order-schema` | nothing | Done (b6357af) |
 | ordering | [02-create-order](ordering/02-create-order.md) | `feature/ordering-02-create-order` | ordering/01 | Not started |
 | ordering | [03-list-buyer-orders](ordering/03-list-buyer-orders.md) | `feature/ordering-03-list-buyer-orders` | ordering/02 | Not started |
 | ordering | [04-get-order](ordering/04-get-order.md) | `feature/ordering-04-get-order` | ordering/02 | Not started |
