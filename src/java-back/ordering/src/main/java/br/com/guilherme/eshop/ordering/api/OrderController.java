@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,6 +64,14 @@ public class OrderController {
     @GetMapping("/orders")
     public List<OrderSummaryDto> list(@RequestParam UUID buyerId) {
         return orderRepository.findSummariesByBuyerId(buyerId).stream().map(OrderSummaryDto::from).toList();
+    }
+
+    /** One order with its lines; 404 when it doesn't exist, Spring's default 400 for a non-numeric id. */
+    @GetMapping("/orders/{id}")
+    public OrderDto get(@PathVariable long id) {
+        return orderRepository.findWithItemsById(id)
+                .map(OrderDto::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order " + id + " not found"));
     }
 
     private static void validate(CreateOrderRequest request) {

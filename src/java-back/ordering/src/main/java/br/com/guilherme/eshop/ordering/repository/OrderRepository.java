@@ -1,8 +1,10 @@
 package br.com.guilherme.eshop.ordering.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +26,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             order by o.createdAt desc, o.id desc
             """)
     List<OrderSummary> findSummariesByBuyerId(@Param("buyerId") UUID buyerId);
+
+    /**
+     * One order with its lines fetch-joined in a single SELECT, so they are usable outside a
+     * transaction (open-in-view is off). Lines come in insertion order ({@code @OrderBy} on items).
+     */
+    @EntityGraph(attributePaths = "items")
+    Optional<Order> findWithItemsById(Long id);
 }

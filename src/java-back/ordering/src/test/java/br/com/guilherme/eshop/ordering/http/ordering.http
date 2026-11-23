@@ -65,3 +65,13 @@ GET {{baseUrl}}/orders
 
 ### List with a non-UUID buyerId — 400
 GET {{baseUrl}}/orders?buyerId=not-a-uuid
+
+### Get an order — 200 { id, buyerId, createdAt, total, items[] }, items in the order they were added
+# Run "Create order" above first so id 1 exists.
+GET {{baseUrl}}/orders/1
+
+### Get an unknown order — 404
+GET {{baseUrl}}/orders/999999999
+
+### Get with a non-numeric id — 400
+GET {{baseUrl}}/orders/abc
