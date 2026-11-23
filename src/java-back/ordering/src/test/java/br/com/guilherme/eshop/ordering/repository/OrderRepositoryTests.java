@@ -108,6 +108,26 @@ class OrderRepositoryTests {
         assertThat(summaries).extracting(OrderSummary::id).doesNotContain(otherId);
     }
 
+    @Test
+    void findWithItemsByIdLoadsLinesInInsertionOrder() {
+        Order order = new Order(UUID.randomUUID(), Instant.parse("2026-02-01T10:00:00Z"));
+        order.addItem(2, "Tee", new BigDecimal("19.50"), 1);
+        order.addItem(1, "Mug", new BigDecimal("9.90"), 2);
+        order.addItem(3, "Cap", new BigDecimal("5.00"), 4);
+        Long id = orderRepository.save(order).getId();
+
+        // Outside any transaction: the lines must already be loaded.
+        Order loaded = orderRepository.findWithItemsById(id).orElseThrow();
+
+        assertThat(loaded.getItems()).extracting(OrderItem::getProductId).containsExactly(2L, 1L, 3L);
+        assertThat(loaded.getTotal()).isEqualByComparingTo("59.30");
+    }
+
+    @Test
+    void findWithItemsByIdUnknownIsEmpty() {
+        assertThat(orderRepository.findWithItemsById(Long.MAX_VALUE)).isEmpty();
+    }
+
     private static Order sampleOrder(UUID buyerId, Instant createdAt) {
         Order order = new Order(buyerId, createdAt);
         order.addItem(1, "Mug", new BigDecimal("9.90"), 2);
