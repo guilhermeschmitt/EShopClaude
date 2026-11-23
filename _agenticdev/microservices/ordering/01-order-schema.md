@@ -1,6 +1,6 @@
 # ordering 01 — order schema
 
-**Status:** Not started
+**Status:** Done (b6357af)
 
 ## Goal
 Give Ordering its own database: wire `ordering` to `orderingdb` in the AppHost and create the `orders` and `order_item` tables through Flyway, with the entities and repository later specs build on.
