@@ -1,6 +1,6 @@
 # ordering 03 — list buyer orders
 
-**Status:** Not started
+**Status:** Done (fb347c9)
 
 ## Goal
 List a buyer's orders as summaries, newest first, for the storefront's "My orders" page (`/orders`, PROJECT.md §6).
