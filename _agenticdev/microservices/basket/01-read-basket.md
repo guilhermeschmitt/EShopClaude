@@ -1,6 +1,6 @@
 # basket 01 — read basket
 
-**Status:** Not started
+**Status:** Done (00595ad)
 
 ## Goal
 Give Basket its Redis storage and the read endpoint: a buyer's basket is stored under `basket:{buyerId}` and returned with a computed total.
