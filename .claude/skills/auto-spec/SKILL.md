@@ -3,12 +3,12 @@ name: auto-spec
 description: Run one spec end to end by following /new-spec, /start-spec and /finish-spec in place, with a human gate after the spec and after the plan. Does none of their steps itself.
 argument-hint: <service> <NN>
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Bash(npm --prefix src run build), Bash(mvn:*), Agent(spec-compliance-reviewer)
+allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Bash(npm --prefix src run build), Bash(npm --prefix src/vue-front/storefront ci), Bash(npm --prefix src/vue-front/storefront run build), Bash(mvn:*), Agent(spec-compliance-reviewer)
 ---
 
 # /auto-spec
 
-Arguments: `$ARGUMENTS` → `<service> <NN>`.
+Arguments: `$ARGUMENTS` → `<service> <NN>`, where `<service>` is `catalog`, `basket`, `ordering` or `storefront`.
 
 This skill only sequences. The three skills stay manual-only, so instead of invoking them, read each one's `SKILL.md` and follow it in place. That file is the single source of truth for its procedure; never repeat, shortcut or reimplement its steps here.
 
