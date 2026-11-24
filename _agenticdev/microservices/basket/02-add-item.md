@@ -1,6 +1,6 @@
 # basket 02 — add item
 
-**Status:** Not started
+**Status:** Done (64a461a)
 
 ## Goal
 Add a product to the basket. Basket looks the product up in Catalog, rejects unknown ids and stores a snapshot of the name and price. This is the first service-to-service call, so the Basket → Catalog wiring comes with it.
