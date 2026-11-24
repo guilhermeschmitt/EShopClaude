@@ -41,7 +41,7 @@ const ordering = await builder
     .withEnvironment('SPRING_DATASOURCE_PASSWORD', postgres.passwordParameter.get());
 
 // Basket owns baskets in Redis, looks products up in Catalog and creates orders in Ordering at checkout. Spring needs host/port/password, not Aspire's connection string.
-await builder
+const basket = await builder
     .addDockerfile('basket', './java-back/basket')
     .withHttpEndpoint({ targetPort: 8080 })
     .withHttpHealthCheck({ path: '/health' })
@@ -59,11 +59,14 @@ await builder
     .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
     .withEnvironment('SPRING_DATA_REDIS_PASSWORD', redis.passwordParameter.get());
 
-// Storefront: Vue 3 + Vite dev server. No service references yet (the first page that calls a service adds them).
+// Storefront: Vue 3 + Vite dev server. The browser reaches Basket through the Vite proxy (/api/basket), which reads
+// services__basket__http__0. Catalog and ordering are added by the specs whose pages call them (storefront 03 and 11).
 await builder
     .addViteApp('storefront', './vue-front/storefront')
     .withNpm({ install: true })
     .withExternalHttpEndpoints()
-    .withHttpHealthCheck({ path: '/' });
+    .withHttpHealthCheck({ path: '/' })
+    .withEnvironment('services__basket__http__0', basket.getEndpoint('http'))
+    .waitFor(basket);
 
 await builder.build().run();
