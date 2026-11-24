@@ -3,7 +3,7 @@ name: finish-spec
 description: Steps 5–9 of the WOW.md cycle for one spec — implement it on its feature branch following the approved plan, verify the build, tests and every Definition of Done line, mark it Done, then (after explicit confirmation) merge --no-ff into main, delete the branch and push main.
 argument-hint: <service> <NN>
 disable-model-invocation: true
-allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Bash(npm --prefix src run build), Bash(mvn:*), Bash(docker build src/java-back/*), Bash(docker ps:*), Bash(docker exec -i postgres-* sh -c *psql*), Bash(aspire run:*), Bash(aspire wait:*), Bash(aspire describe:*), Bash(curl -s * http://localhost:*), TaskStop, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_close
+allowed-tools: Read, Write, Edit, Glob, Bash(git:*), Bash(npm --prefix src run build), Bash(mvn:*), Bash(docker build src/java-back/*), Bash(docker ps:*), Bash(docker exec -i postgres-* sh -c *psql*), Bash(aspire run:*), Bash(aspire wait:*), Bash(aspire describe:*), Bash(curl -s * http://localhost:*), TaskStop, Agent(spec-compliance-reviewer), mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_close
 ---
 
 # /finish-spec
@@ -43,12 +43,16 @@ Arguments: `$ARGUMENTS` → `<service> <NN>`. Spec: `_agenticdev/microservices/<
    - If any code changes after a check ran (a fix found while verifying), commit it with a `<service>/<NN>: …` message, update the spec if it described the old behaviour, and re-run every check from the top against a fresh `aspire run`.
    - **Tear down.** Close the browser and stop the `aspire run` task (TaskStop) before marking Done, also when a check failed.
    - Any failed check or any "no" from me stops here.
-4. **Mark Done.** Take `git rev-parse --short HEAD`. In the spec set `**Status:** Done (<sha>)`.
-5. **Status table.** Set the same `Done (<sha>)` in this spec's row of `_agenticdev/microservices/README.md`.
-6. **Docs commit.** `git add <spec path> _agenticdev/microservices/README.md`, then `git commit -m "Mark <service>/<NN>-<short-name> as Done"`.
-7. **Confirm, then merge.** Show the branch, the target `main`, and `git log --oneline main..HEAD`, and ask me to confirm. Only after a "yes":
+4. **Compliance review.** Only after every Definition of Done line has passed. `git status --porcelain` must be empty (everything committed). Then launch the `spec-compliance-reviewer` agent with the service, the spec number `<NN>` and the branch name, and wait for its answer.
+   - Show me its full output verbatim.
+   - `FAIL` (or a refusal, such as a dirty working tree) stops the skill here, before Mark Done. Do not fix the findings yourself; report them and stop.
+   - `PASS` continues to the next step.
+5. **Mark Done.** Take `git rev-parse --short HEAD`. In the spec set `**Status:** Done (<sha>)`.
+6. **Status table.** Set the same `Done (<sha>)` in this spec's row of `_agenticdev/microservices/README.md`.
+7. **Docs commit.** `git add <spec path> _agenticdev/microservices/README.md`, then `git commit -m "Mark <service>/<NN>-<short-name> as Done"`.
+8. **Confirm, then merge.** Show the branch, the target `main`, and `git log --oneline main..HEAD`, and ask me to confirm. Only after a "yes":
    - `git checkout main`
    - `git merge --no-ff <branch> -m "Merge <branch>"` — on any conflict, stop and report; do not resolve or abort on my behalf.
    - `git branch -d <branch>`
    - `git push origin main`
-8. **Report.** The merge commit SHA, `git diff --stat <merge>^1 <merge>` (files changed), and a table of every Definition of Done line with how it was verified (command run and its result / confirmed by me).
+9. **Report.** The merge commit SHA, `git diff --stat <merge>^1 <merge>` (files changed), a table of every Definition of Done line with how it was verified (command run and its result / confirmed by me), and the compliance reviewer's verdict (`PASS`) with its Observations.
