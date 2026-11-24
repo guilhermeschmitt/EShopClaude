@@ -5,6 +5,10 @@ spring:
   application:
     name: basket
 
+# Catalog's base URL, injected by Aspire through withReference(catalog). No default: a missing value fails at startup.
+catalog:
+  url: ${services__catalog__http__0}
+
 # Health endpoint at /health (the MapDefaultEndpoints equivalent).
 management:
   endpoints:
