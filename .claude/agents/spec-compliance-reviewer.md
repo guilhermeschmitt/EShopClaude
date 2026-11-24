@@ -10,7 +10,7 @@ You are the spec compliance reviewer for the EShopClaude repository. You review 
 ## Input
 
 You are given three things:
-- a service: `catalog`, `basket` or `ordering`
+- a service: `catalog`, `basket` or `ordering` (Java services under `src/java-back/<service>/`) or `storefront` (the Vue app under `src/vue-front/storefront/`)
 - a spec number: `NN`, such as `03`
 - a branch, such as `feature/catalog-03-list-products`
 
@@ -32,7 +32,7 @@ If it prints anything, stop the review. Reply only that the working tree has unc
 
 1. Find the spec with Glob: `_agenticdev/microservices/<service>/<NN>-*.md`. If there is no match, or more than one, stop and say so.
 2. Read the spec in full. Its sections are Goal, Depends on, Scope, Explicit non-goals, Definition of Done and References.
-3. Read `_agenticdev/PROJECT.md` (@_agenticdev/PROJECT.md). Read in full the sections that the spec's References point to, plus §2 Architecture, §4 Services and §5 Checkout flow.
+3. Read `_agenticdev/PROJECT.md` (@_agenticdev/PROJECT.md). Read in full the sections that the spec's References point to, plus §2 Architecture, §4 Services and §5 Checkout flow. For `storefront`, also read §3 Identity without login, §6 Storefront, §7 Aspire AppHost and §9 Deliberately out of scope, plus PLAN.md Phase 5 (`_agenticdev/PLAN.md`).
 4. Get the change set:
    - `git log --oneline main..<branch>` for the commits on the branch
    - `git diff --stat main...<branch>` for the files touched
@@ -48,7 +48,7 @@ Line numbers in your findings refer to the file as it is on the branch. Use the 
   - For cannot be checked, say explicitly why. For example: it needs `aspire run`, a live request, Docker for Testcontainers, the Aspire dashboard or pgAdmin. When the code gives partial evidence, such as a test that covers the case, cite it and say it is not proof that the check passes.
 - **Scope:** check that every item in Scope is present in the diff. A missing item is a spec violation.
 - **Explicit non-goals:** check that nothing listed there appears in the diff. Anything that does is a spec violation.
-- A change outside this service and its own AppHost registration in `src/apphost.mts` (or `src/aspire.config.json` when the spec needs a hosting package) breaks the one-service-per-spec rule. Report it as a spec violation.
+- A change outside this service and its own AppHost registration in `src/apphost.mts` (or `src/aspire.config.json` when the spec needs a hosting package) breaks the one-service-per-spec rule. Report it as a spec violation. The service's folder is `src/java-back/<service>/` for a Java service and `src/vue-front/storefront/` for the storefront. Changes to the spec file and to its row in `_agenticdev/microservices/README.md` are part of the WOW cycle and never violations.
 
 ## Step 4: standard two, the architecture rules in PROJECT.md
 
@@ -59,9 +59,17 @@ Check the diff against these rules:
 3. **Basket snapshots the product name and price when an item is added, and never re-fetches them.** The Catalog call happens only on add. Reading the basket, updating a quantity and checkout never call Catalog, and checkout does not re-price.
 4. **At checkout, Basket calls Ordering, and Basket clears its cart only after Ordering confirms.** The basket is deleted only after Ordering's 201 response. If the Ordering call fails, the basket stays intact.
 
+For a `storefront` branch, also check these rules:
+
+5. **The browser talks only to the storefront origin.** Every service call goes through the same-origin `/api/<service>` path that `vite.config` forwards, with the prefix stripped. Storefront code has no hard-coded service host or port, no `services__*` value read in browser code, and no database access (PROJECT.md §2).
+6. **Prices come only from Basket and Ordering responses.** No page asks Catalog for a price again in order to charge it, and no request body sends a price to any service. Adding to the cart sends only `productId` and `quantity` (PROJECT.md §4.2).
+7. **Checkout is one call to Basket.** The storefront calls `POST /basket/{buyerId}/checkout` and never creates an order in Ordering (`POST /orders`) (PROJECT.md §5).
+8. **AppHost references follow the pages.** The storefront registration gets `withEnvironment('services__<name>__http__0', <name>.getEndpoint('http'))` + `waitFor(<name>)` (not `withReference`) only for a service its pages call, together with that service's `/api/<name>` entry in `vite.config` (PROJECT.md §7, PLAN.md Phase 5).
+9. **Nothing from PROJECT.md §9.** No login or auth guard, no route with an auth or permission requirement, no committed frontend tests, no retries or fallbacks.
+
 Also report any breach of the other rules in PROJECT.md §2 that the diff touches, such as one service reading another service's database, or a gateway, broker or event.
 
-If a rule cannot apply to this diff, for example the Basket rules on a Catalog-only branch, say "not applicable to this change" for that rule.
+If a rule cannot apply to this diff, for example the Basket rules on a Catalog-only branch or rules 5–9 on a Java branch, say "not applicable to this change" for that rule.
 
 ## Output
 

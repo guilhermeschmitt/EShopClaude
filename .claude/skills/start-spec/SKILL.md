@@ -15,7 +15,7 @@ Repository state when this skill was invoked:
 !`git status --porcelain`
 ```
 
-Arguments: `$ARGUMENTS` → `<service> <NN>` (`catalog`, `basket` or `ordering`; two digits).
+Arguments: `$ARGUMENTS` → `<service> <NN>` (`catalog`, `basket`, `ordering` or `storefront`; two digits).
 
 **Hard limits:** no push (feature branches stay local), no merge, no `rm`, no edits to any file. Only the git commands in `allowed-tools`.
 
