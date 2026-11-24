@@ -15,7 +15,7 @@ const redis = await builder.addRedis('redis').withoutHttpsCertificate();
 // The JVM ignores SSL_CERT_DIR, so hand the agent Aspire's dev-cert bundle to trust the HTTPS OTLP endpoint.
 
 // Catalog owns catalogdb. Aspire's connection string is not JDBC, so build the SPRING_DATASOURCE_* contract here.
-await builder
+const catalog = await builder
     .addDockerfile('catalog', './java-back/catalog')
     .withHttpEndpoint({ targetPort: 8080 })
     .withHttpHealthCheck({ path: '/health' })
@@ -40,7 +40,7 @@ await builder
     .withEnvironment('SPRING_DATASOURCE_USERNAME', await postgres.userNameReference())
     .withEnvironment('SPRING_DATASOURCE_PASSWORD', postgres.passwordParameter.get());
 
-// Basket owns baskets in Redis. Spring needs host/port/password, not Aspire's connection string.
+// Basket owns baskets in Redis and looks products up in Catalog. Spring needs host/port/password, not Aspire's connection string.
 await builder
     .addDockerfile('basket', './java-back/basket')
     .withHttpEndpoint({ targetPort: 8080 })
@@ -49,6 +49,10 @@ await builder
     .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE')
     .withReference(redis)
     .waitFor(redis)
+    // Dockerfile containers don't provide service discovery, so withReference(catalog) is rejected.
+    // Set the service-discovery variable from catalog's endpoint instead.
+    .withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))
+    .waitFor(catalog)
     .withEnvironment('SPRING_DATA_REDIS_HOST', await redis.host())
     .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
     .withEnvironment('SPRING_DATA_REDIS_PASSWORD', redis.passwordParameter.get());

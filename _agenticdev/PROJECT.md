@@ -117,6 +117,7 @@ If any step fails, the error propagates as a 5xx, the basket stays intact and th
   - basket → redis, catalog and ordering
   - storefront → catalog, basket and ordering
 - Only Basket references Redis. Catalog and Ordering never connect to it.
+- Containers built from Dockerfiles don't provide service discovery, so `withReference(<java service>)` is rejected at runtime. A "reference" to a Java service is therefore `withEnvironment('services__<name>__http__0', <name>.getEndpoint('http'))` plus `waitFor(<name>)`. This was found in basket/02.
 - **Env contract for the Java services:** Catalog and Ordering get `SPRING_DATASOURCE_URL` (`jdbc:postgresql://…/catalogdb` or `…/orderingdb`), `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`. Basket gets `SPRING_DATA_REDIS_HOST`, `SPRING_DATA_REDIS_PORT` and `SPRING_DATA_REDIS_PASSWORD` (Aspire's Redis requires a password). The AppHost builds these from the resource endpoints and parameters, because Aspire's default connection-string format is not JDBC. Basket also reads `services__catalog__http__0` and `services__ordering__http__0`, mapped in `application.yml` to `catalog.url` and `ordering.url`.
 
 ## 8. Java service conventions (each of catalog, basket and ordering)
