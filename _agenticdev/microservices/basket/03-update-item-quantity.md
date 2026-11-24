@@ -1,6 +1,6 @@
 # basket 03 — update item quantity
 
-**Status:** Not started
+**Status:** Done (6fe653c)
 
 ## Goal
 Change the quantity of a basket line, or remove the line with quantity 0, so the cart page can adjust the basket. The update uses only the snapshot already in Redis. It never calls Catalog and never re-prices.
