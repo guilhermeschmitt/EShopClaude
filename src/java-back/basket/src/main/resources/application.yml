@@ -9,6 +9,10 @@ spring:
 catalog:
   url: ${services__catalog__http__0}
 
+# Ordering's base URL (checkout creates the order there), injected by the AppHost. No default: a missing value fails at startup.
+ordering:
+  url: ${services__ordering__http__0}
+
 # Health endpoint at /health (the MapDefaultEndpoints equivalent).
 management:
   endpoints:
