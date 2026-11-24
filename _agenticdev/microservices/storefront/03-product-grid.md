@@ -1,6 +1,6 @@
 # storefront 03 — product grid
 
-**Status:** Not started
+**Status:** Done (5044b4b)
 
 ## Goal
 Show the first page of products on `/` as a grid of cards. This is the first page that calls Catalog, so it adds the Catalog reference and proxy. The pager, category filter, search and **Add to cart** build on this grid (storefront/04–07).
