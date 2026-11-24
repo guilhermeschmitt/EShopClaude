@@ -63,7 +63,7 @@ None on the server. The only state is in the browser:
 ## Tasks
 1. **Project scaffold** (`src/vue-front/storefront/`), following the create-vue TypeScript layout:
    - `package.json`: `"private": true`, `"type": "module"`, and the scripts `dev` = `vite`, `build` = `vue-tsc -b && vite build`, `preview` = `vite preview`. Dependencies: `vue`, `vue-router` `^4` (vue-base's peer range) and `"@guilherme/vue-base": "github:guilhermeschmitt/vue-base#v0.0.1"`. Dev dependencies: `vite`, `@vitejs/plugin-vue`, `typescript`, `vue-tsc`, `@vue/tsconfig` and `@types/node`. Don't add axios; vue-base bundles it. Run `npm install` and commit `package-lock.json`.
-   - `index.html` with `<div id="app">` and `<script type="module" src="/src/main.ts">`, title `EShop`.
+   - `index.html` with `<div id="app">` and `<script type="module" src="/src/main.ts">`, title `EShop`, and an empty inline favicon (`<link rel="icon" href="data:,">`), so the browser doesn't request `/favicon.ico` and log a 404.
    - `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json` and `env.d.ts` as create-vue generates them.
    - `vite.config.ts`: `@vitejs/plugin-vue` only, plus the `@` → `src` alias. There's no `server.proxy` and no hard-coded `server.port`; Aspire assigns the port.
    - `.gitignore`: `node_modules/` and `dist/`.
