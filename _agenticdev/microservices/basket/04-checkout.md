@@ -1,6 +1,6 @@
 # basket 04 — checkout
 
-**Status:** Not started
+**Status:** Done (5ee7850)
 
 ## Goal
 Turn the basket into an order. Basket sends its lines with the snapshot prices to Ordering and clears the basket only after the order exists. The Basket → Ordering wiring comes with it.
