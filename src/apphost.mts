@@ -7,7 +7,8 @@ const postgres = await builder.addPostgres('postgres').withPgAdmin();
 const catalogdb = await postgres.addDatabase('catalogdb');
 const orderingdb = await postgres.addDatabase('orderingdb');
 
-await builder.addRedis('redis');
+// Redis runs without TLS: Aspire would serve TLS with its dev cert, which the JVM doesn't trust.
+const redis = await builder.addRedis('redis').withoutHttpsCertificate();
 
 // Java microservices: each built from its own Dockerfile, listening on container port 8080.
 // withOtlpExporter injects OTEL_* env vars for the OpenTelemetry Java agent (the AddServiceDefaults equivalent).
@@ -39,14 +40,17 @@ await builder
     .withEnvironment('SPRING_DATASOURCE_USERNAME', await postgres.userNameReference())
     .withEnvironment('SPRING_DATASOURCE_PASSWORD', postgres.passwordParameter.get());
 
-// Not wired to its data store yet (basket/01).
-for (const name of ['basket']) {
-    await builder
-        .addDockerfile(name, `./java-back/${name}`)
-        .withHttpEndpoint({ targetPort: 8080 })
-        .withHttpHealthCheck({ path: '/health' })
-        .withOtlpExporter()
-        .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE');
-}
+// Basket owns baskets in Redis. Spring needs host/port/password, not Aspire's connection string.
+await builder
+    .addDockerfile('basket', './java-back/basket')
+    .withHttpEndpoint({ targetPort: 8080 })
+    .withHttpHealthCheck({ path: '/health' })
+    .withOtlpExporter()
+    .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE')
+    .withReference(redis)
+    .waitFor(redis)
+    .withEnvironment('SPRING_DATA_REDIS_HOST', await redis.host())
+    .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
+    .withEnvironment('SPRING_DATA_REDIS_PASSWORD', redis.passwordParameter.get());
 
 await builder.build().run();
