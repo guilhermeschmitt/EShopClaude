@@ -1,3 +1,6 @@
-# Loaded on top of classpath:/application.yml in tests. Catalog is stubbed with MockRestServiceServer at this URL.
+# Loaded on top of classpath:/application.yml in tests. Catalog and Ordering are stubbed with MockRestServiceServer at these URLs.
 catalog:
   url: http://catalog.test
+
+ordering:
+  url: http://ordering.test

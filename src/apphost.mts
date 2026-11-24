@@ -28,7 +28,7 @@ const catalog = await builder
     .withEnvironment('SPRING_DATASOURCE_PASSWORD', postgres.passwordParameter.get());
 
 // Ordering owns orderingdb, with the same SPRING_DATASOURCE_* contract as catalog.
-await builder
+const ordering = await builder
     .addDockerfile('ordering', './java-back/ordering')
     .withHttpEndpoint({ targetPort: 8080 })
     .withHttpHealthCheck({ path: '/health' })
@@ -40,7 +40,7 @@ await builder
     .withEnvironment('SPRING_DATASOURCE_USERNAME', await postgres.userNameReference())
     .withEnvironment('SPRING_DATASOURCE_PASSWORD', postgres.passwordParameter.get());
 
-// Basket owns baskets in Redis and looks products up in Catalog. Spring needs host/port/password, not Aspire's connection string.
+// Basket owns baskets in Redis, looks products up in Catalog and creates orders in Ordering at checkout. Spring needs host/port/password, not Aspire's connection string.
 await builder
     .addDockerfile('basket', './java-back/basket')
     .withHttpEndpoint({ targetPort: 8080 })
@@ -49,10 +49,12 @@ await builder
     .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE')
     .withReference(redis)
     .waitFor(redis)
-    // Dockerfile containers don't provide service discovery, so withReference(catalog) is rejected.
-    // Set the service-discovery variable from catalog's endpoint instead.
+    // Dockerfile containers don't provide service discovery, so withReference(catalog/ordering) is rejected.
+    // Set the service-discovery variables from each peer's endpoint instead.
     .withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))
     .waitFor(catalog)
+    .withEnvironment('services__ordering__http__0', ordering.getEndpoint('http'))
+    .waitFor(ordering)
     .withEnvironment('SPRING_DATA_REDIS_HOST', await redis.host())
     .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
     .withEnvironment('SPRING_DATA_REDIS_PASSWORD', redis.passwordParameter.get());

@@ -16,4 +16,4 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | basket | [01-read-basket](basket/01-read-basket.md) | `feature/basket-01-read-basket` | nothing | Done (00595ad) |
 | basket | [02-add-item](basket/02-add-item.md) | `feature/basket-02-add-item` | basket/01, catalog/04 | Done (64a461a) |
 | basket | [03-update-item-quantity](basket/03-update-item-quantity.md) | `feature/basket-03-update-item-quantity` | basket/02 | Done (6fe653c) |
-| basket | [04-checkout](basket/04-checkout.md) | `feature/basket-04-checkout` | basket/03, ordering/02, ordering/04 | Not started |
+| basket | [04-checkout](basket/04-checkout.md) | `feature/basket-04-checkout` | basket/03, ordering/02, ordering/04 | Done (5ee7850) |

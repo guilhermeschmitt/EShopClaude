@@ -78,6 +78,17 @@ class BasketRepositoryTests {
         assertThat(redis.getExpire(key)).isEqualTo(-1L);
     }
 
+    @Test
+    void deleteRemovesKey() {
+        UUID buyerId = UUID.randomUUID();
+        repository.save(sampleBasket(buyerId));
+
+        repository.delete(buyerId);
+
+        assertThat(repository.find(buyerId)).isEmpty();
+        assertThat(redis.hasKey(BasketRepository.key(buyerId))).isFalse();
+    }
+
     private static Basket sampleBasket(UUID buyerId) {
         return new Basket(buyerId, List.of(
                 new BasketItem(1, "Mug", new BigDecimal("9.90"), 2),
