@@ -108,7 +108,7 @@ If any step fails, the error propagates as a 5xx, the basket stays intact and th
 - Add the packages `Aspire.Hosting.PostgreSQL` and `Aspire.Hosting.Redis` to `aspire.config.json`.
 - Resources:
   - `postgres` with the databases `catalogdb` and `orderingdb`, and pgAdmin attached through `withPgAdmin()`
-  - `redis`
+  - `redis`, with `withoutHttpsCertificate()` (Aspire enables TLS with its dev cert by default, and the JVM doesn't trust it)
   - `catalog`, `basket` and `ordering` through `addDockerfile`, with an HTTP endpoint on container port 8080
   - `storefront` through `addViteApp("./vue-front/storefront")`, with external HTTP endpoints
 - References and waits:
@@ -117,7 +117,7 @@ If any step fails, the error propagates as a 5xx, the basket stays intact and th
   - basket → redis, catalog and ordering
   - storefront → catalog, basket and ordering
 - Only Basket references Redis. Catalog and Ordering never connect to it.
-- **Env contract for the Java services:** Catalog and Ordering get `SPRING_DATASOURCE_URL` (`jdbc:postgresql://…/catalogdb` or `…/orderingdb`), `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`. Basket gets `SPRING_DATA_REDIS_HOST` and `SPRING_DATA_REDIS_PORT`. The AppHost builds these from the resource endpoints and parameters, because Aspire's default connection-string format is not JDBC. Basket also reads `services__catalog__http__0` and `services__ordering__http__0`, mapped in `application.yml` to `catalog.url` and `ordering.url`.
+- **Env contract for the Java services:** Catalog and Ordering get `SPRING_DATASOURCE_URL` (`jdbc:postgresql://…/catalogdb` or `…/orderingdb`), `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD`. Basket gets `SPRING_DATA_REDIS_HOST`, `SPRING_DATA_REDIS_PORT` and `SPRING_DATA_REDIS_PASSWORD` (Aspire's Redis requires a password). The AppHost builds these from the resource endpoints and parameters, because Aspire's default connection-string format is not JDBC. Basket also reads `services__catalog__http__0` and `services__ordering__http__0`, mapped in `application.yml` to `catalog.url` and `ordering.url`.
 
 ## 8. Java service conventions (each of catalog, basket and ordering)
 - **Project:** a standalone Maven project at `src/java-back/{service}/` with `spring-boot-starter-parent` as its parent. The base package is `br.com.guilherme.eshop.{service}`, with the layers `api` (controllers and DTO records), `domain`, `repository` and `client` (Basket only, using Spring `RestClient`).
