@@ -33,4 +33,8 @@ public class BasketRepository {
     public void save(Basket basket) {
         redis.opsForValue().set(key(basket.buyerId()), jsonMapper.writeValueAsString(basket));
     }
+
+    public void delete(UUID buyerId) {
+        redis.delete(key(buyerId));
+    }
 }

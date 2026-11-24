@@ -14,7 +14,8 @@ public class CatalogClient {
     private final RestClient rest;
 
     public CatalogClient(RestClient.Builder builder, @Value("${catalog.url}") String catalogUrl) {
-        this.rest = builder.baseUrl(catalogUrl).build();
+        // The builder is shared with OrderingClient (RestClientConfig), so clone it before setting the base URL.
+        this.rest = builder.clone().baseUrl(catalogUrl).build();
     }
 
     public Optional<CatalogProduct> findProduct(long id) {
