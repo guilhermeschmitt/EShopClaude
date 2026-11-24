@@ -18,7 +18,7 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | basket | [03-update-item-quantity](basket/03-update-item-quantity.md) | `feature/basket-03-update-item-quantity` | basket/02 | Done (6fe653c) |
 | basket | [04-checkout](basket/04-checkout.md) | `feature/basket-04-checkout` | basket/03, ordering/02, ordering/04 | Done (5ee7850) |
 | storefront | [01-storefront-shell](storefront/01-storefront-shell.md) | `feature/storefront-01-storefront-shell` | nothing | Done (cbfcc65) |
-| storefront | [02-cart-badge](storefront/02-cart-badge.md) | `feature/storefront-02-cart-badge` | storefront/01, basket/01 | Not started |
+| storefront | [02-cart-badge](storefront/02-cart-badge.md) | `feature/storefront-02-cart-badge` | storefront/01, basket/01 | Done (049f4be) |
 | storefront | [03-product-grid](storefront/03-product-grid.md) | `feature/storefront-03-product-grid` | storefront/01, catalog/03 | Not started |
 | storefront | [04-product-pager](storefront/04-product-pager.md) | `feature/storefront-04-product-pager` | storefront/03, catalog/03 | Not started |
 | storefront | [05-category-filter](storefront/05-category-filter.md) | `feature/storefront-05-category-filter` | storefront/04, catalog/05 | Not started |

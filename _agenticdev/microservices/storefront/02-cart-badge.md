@@ -1,6 +1,6 @@
 # storefront 02 — cart badge
 
-**Status:** Not started
+**Status:** Done (049f4be)
 
 ## Goal
 Show the buyer's basket in the header as a badge with the sum of item quantities. The basket is loaded from Basket and kept in shared state that later pages refresh. This spec also adds the shared error display, because this is the first call that can fail. It is the first spec whose pages call a service, so it also adds the Basket reference and the Basket proxy.
