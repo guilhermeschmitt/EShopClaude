@@ -7,7 +7,8 @@ Add a product to the basket. Basket looks the product up in Catalog, rejects unk
 
 ## Context
 - basket/01 is merged (00595ad). In `src/apphost.mts`, `basket` is registered on its own: `addDockerfile('basket', './java-back/basket')`, endpoint 8080, `/health`, OTLP, cert trust, `withReference(redis)` + `waitFor(redis)` and `SPRING_DATA_REDIS_HOST/PORT/PASSWORD`. It has no reference to `catalog`.
-- `catalog` is registered with `await builder.addDockerfile('catalog', ...)...`, but the result isn't kept in a variable, so nothing can reference it yet. `withReference` on a container resource accepts another `ContainerResource` (see `src/.aspire/modules/aspire.mts`). Referencing a resource with an HTTP endpoint injects `services__catalog__http__0` into basket, resolved for the container network.
+- `catalog` is registered with `await builder.addDockerfile('catalog', ...)...`, but the result isn't kept in a variable, so nothing can reference it yet.
+- **`withReference(catalog)` doesn't work here.** The TypeScript signature accepts a `ContainerResource`, but at runtime the AppHost fails with *"The resource 'catalog' can't be used with withReference because it doesn't provide a connection string, service discovery, or a custom withReference implementation"*. This was found while verifying this spec on 2026-11-24. Instead, basket gets `withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))`, which takes an `EndpointReference`, plus `waitFor(catalog)`. The variable name stays the same, so `application.yml` and PROJECT §7's env contract are unchanged.
 - catalog/04 is merged: `GET /products/{id}` returns `ProductDto { id, name, description, price, category }`, or 404 (a `ResponseStatusException`). The seed (`V2__seed_products.sql`, inserted in order) makes id 1 `Classic Logo T-Shirt` at 19.90 and id 2 `Minimalist Black T-Shirt` at 22.50.
 - Basket code today:
   - `domain.Basket(UUID buyerId, List<BasketItem> items)` with `empty()` and a computed `total()`;
@@ -26,7 +27,7 @@ Add a product to the basket. Basket looks the product up in Catalog, rejects unk
 - `catalog/04-get-product`
 
 ## Scope
-- [ ] AppHost: keep `catalog` in a variable; basket gets `withReference(catalog)` and `waitFor(catalog)`.
+- [ ] AppHost: keep `catalog` in a variable. basket gets `withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))` and `waitFor(catalog)`, not `withReference` (see Context).
 - [ ] `application.yml`: `catalog.url: ${services__catalog__http__0}` (no default, so a missing env var fails at startup).
 - [ ] `client/CatalogClient` (Spring `RestClient` built from Boot's `RestClient.Builder`, base URL `catalog.url`) calls `GET /products/{id}` and returns `Optional<CatalogProduct>`: empty on 404, and any other error propagates.
 - [ ] `POST /basket/{buyerId}/items` `{ productId, quantity }`:
@@ -64,13 +65,13 @@ Add a product to the basket. Basket looks the product up in Catalog, rejects unk
 ## Tasks
 1. **AppHost** (`src/apphost.mts`):
    - `const catalog = await builder.addDockerfile('catalog', …)…`, with the chain unchanged.
-   - On basket, add `.withReference(catalog)` and `.waitFor(catalog)`.
+   - On basket, add `.withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))` and `.waitFor(catalog)`, with a comment explaining why it isn't `withReference`.
    - Update basket's comment to: "Basket owns baskets in Redis and looks products up in Catalog. Spring needs host/port/password, not Aspire's connection string."
    - Every builder call is awaited.
 2. **pom** (`src/java-back/basket/pom.xml`), with no hard-coded versions:
    - Main: `spring-boot-starter-restclient`.
    - Test: `spring-boot-starter-restclient-test`.
-3. **`src/main/resources/application.yml`:** add the top-level `catalog.url: ${services__catalog__http__0}` with a comment that Aspire injects it through `withReference(catalog)`.
+3. **`src/main/resources/application.yml`:** add the top-level `catalog.url: ${services__catalog__http__0}` with a comment that the AppHost injects it from catalog's endpoint.
 4. **`src/test/resources/config/application.yml`** (new): `catalog.url: http://catalog.test`. Boot loads `classpath:/config/application.yml` on top of `classpath:/application.yml`, so the existing test classes need no change.
 5. **Domain:** add `Basket.withItem(...)` as in Data model.
 6. **Client:** `client/CatalogProduct.java` and `client/CatalogClient.java`. Delete `client/package-info.java`.

@@ -49,7 +49,9 @@ await builder
     .withCertificateTrustEnvironment('OTEL_EXPORTER_OTLP_CERTIFICATE')
     .withReference(redis)
     .waitFor(redis)
-    .withReference(catalog)
+    // Dockerfile containers don't provide service discovery, so withReference(catalog) is rejected.
+    // Set the service-discovery variable from catalog's endpoint instead.
+    .withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))
     .waitFor(catalog)
     .withEnvironment('SPRING_DATA_REDIS_HOST', await redis.host())
     .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
