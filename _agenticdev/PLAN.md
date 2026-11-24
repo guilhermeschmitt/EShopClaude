@@ -107,34 +107,28 @@ Where the old steps went: 2.2 → catalog 01, ordering 01, basket 01; 2.3 → ca
 
 ---
 
-## Phase 5 — Storefront pages
+## Phase 5 — Storefront
 
-#### 5.1 App shell and shared basket state
-- Header: app name → `/`, **My orders** → `/orders`, cart icon → `/cart` with badge = sum of quantities.
-- Shared basket state (load `GET /basket/{buyerId}` on start, refresh after every basket call); error display for failed calls (errors propagate to the UI, §2).
-- **Projects:** Storefront.
-- **Verify:** `npm run build`; `aspire run`; Browser: header links navigate, badge shows the quantities of a basket filled via curl.
+The storefront is built like the services: a series of small specs, one feature branch each ([WOW.md](WOW.md)). A storefront spec changes only `src/vue-front/storefront/` and the `storefront` registration in the AppHost. Its pages call the three services but never change them. The status table is in [microservices/README.md](microservices/README.md).
 
-#### 5.2 Product catalog page `/`
-- Product grid (vue-base components), category select (`/categories`), search box (`q`), pager (`page`, `size=8`), **Add to cart** per card → `POST /items`, badge updates.
-- **Projects:** Storefront.
-- **Verify:** Browser: filter, search and page through the ~24 products; add to cart updates the badge; network requests hit only `/api/catalog/*` and `/api/basket/*` (same origin).
+- **Owns:** the browser UI, the anonymous `buyerId` and the Vite proxy to the services (§2, §3, §6).
+- **References:** the first spec whose pages call a service adds that service's `services__<name>__http__0` + `waitFor` and its `/api/<name>` proxy entry: basket in 02, catalog in 03, ordering in 11.
+- **Specs:** [microservices/storefront/](microservices/storefront/)
+  1. `01-storefront-shell.md`
+  2. `02-cart-badge.md`
+  3. `03-product-grid.md`
+  4. `04-product-pager.md`
+  5. `05-category-filter.md`
+  6. `06-product-search.md`
+  7. `07-add-to-cart.md`
+  8. `08-cart-view.md`
+  9. `09-cart-adjust.md`
+  10. `10-checkout-review.md`
+  11. `11-my-orders.md`
+  12. `12-order-detail.md`
+  13. `13-place-order.md`
 
-#### 5.3 Cart page `/cart`
-- Lines with +/- quantity and remove (`PUT /items/{productId}`, `0` removes), total, **Checkout** button → `/checkout` (disabled when empty).
-- **Projects:** Storefront.
-- **Verify:** Browser: change a quantity, remove a line; total and badge stay consistent.
-
-#### 5.4 Checkout page `/checkout`
-- Read-only lines and total; **Place order** disabled while the request runs → `POST /checkout` → refresh badge (0) → navigate to `/orders/{orderId}`; on failure show the error and keep the basket.
-- **Projects:** Storefront.
-- **Verify:** Browser: placing an order lands on the order detail with badge 0; a double-click creates one order (check `/orders`); with `ordering` stopped, the error is shown and the cart is intact.
-
-#### 5.5 Orders pages `/orders` and `/orders/:id`
-- `/orders`: this buyer's orders (date, item count, total), newest first, each linking to its detail.
-- `/orders/:id`: lines, total, date.
-- **Projects:** Storefront.
-- **Verify:** Browser: the order from 5.4 is listed and its detail matches the snapshot prices; a new buyerId (cleared localStorage) shows no orders.
+Where the old steps went: 1.3 and the storefront part of 1.4 → storefront 01 (the storefront was never built in Phase 1); 5.1 → storefront 02; 5.2 → storefront 03–07; 5.3 → storefront 08–09; 5.4 → storefront 10 and 13; 5.5 → storefront 11–12.
 
 ---
 
