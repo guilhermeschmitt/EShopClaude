@@ -59,14 +59,17 @@ const basket = await builder
     .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
     .withEnvironment('SPRING_DATA_REDIS_PASSWORD', redis.passwordParameter.get());
 
-// Storefront: Vue 3 + Vite dev server. The browser reaches Basket through the Vite proxy (/api/basket), which reads
-// services__basket__http__0. Catalog and ordering are added by the specs whose pages call them (storefront 03 and 11).
+// Storefront: Vue 3 + Vite dev server. The browser reaches Basket and Catalog through the Vite proxy (/api/basket,
+// /api/catalog), which reads services__basket__http__0 and services__catalog__http__0. Ordering is added by the spec
+// whose pages call it (storefront 11).
 await builder
     .addViteApp('storefront', './vue-front/storefront')
     .withNpm({ install: true })
     .withExternalHttpEndpoints()
     .withHttpHealthCheck({ path: '/' })
     .withEnvironment('services__basket__http__0', basket.getEndpoint('http'))
-    .waitFor(basket);
+    .waitFor(basket)
+    .withEnvironment('services__catalog__http__0', catalog.getEndpoint('http'))
+    .waitFor(catalog);
 
 await builder.build().run();
