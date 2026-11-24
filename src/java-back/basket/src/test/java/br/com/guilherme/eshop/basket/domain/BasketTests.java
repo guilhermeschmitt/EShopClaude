@@ -45,4 +45,33 @@ class BasketTests {
                 new BasketItem(2, "Tee", new BigDecimal("19.50"), 1));
         assertThat(updated.total()).isEqualTo(new BigDecimal("49.20"));
     }
+
+    private static Basket mugAndTee() {
+        return new Basket(UUID.randomUUID(), List.of(
+                new BasketItem(1, "Mug", new BigDecimal("9.90"), 2),
+                new BasketItem(2, "Tee", new BigDecimal("19.50"), 1)));
+    }
+
+    @Test
+    void withQuantitySetsLineQuantity() {
+        Basket updated = mugAndTee().withQuantity(1, 5).orElseThrow();
+
+        assertThat(updated.items()).containsExactly(
+                new BasketItem(1, "Mug", new BigDecimal("9.90"), 5),
+                new BasketItem(2, "Tee", new BigDecimal("19.50"), 1));
+        assertThat(updated.total()).isEqualTo(new BigDecimal("69.00"));
+    }
+
+    @Test
+    void withQuantityZeroRemovesLine() {
+        Basket updated = mugAndTee().withQuantity(1, 0).orElseThrow();
+
+        assertThat(updated.items()).containsExactly(new BasketItem(2, "Tee", new BigDecimal("19.50"), 1));
+        assertThat(updated.total()).isEqualTo(new BigDecimal("19.50"));
+    }
+
+    @Test
+    void withQuantityUnknownLineIsEmpty() {
+        assertThat(mugAndTee().withQuantity(99, 1)).isEmpty();
+    }
 }
