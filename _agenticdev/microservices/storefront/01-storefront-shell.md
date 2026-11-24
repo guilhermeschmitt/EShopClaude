@@ -1,6 +1,6 @@
 # storefront 01 — storefront shell
 
-**Status:** Not started
+**Status:** Done (cbfcc65)
 
 ## Goal
 Create the storefront project and register it in the AppHost, with the app shell every page lives in: the header, the placeholder routes and the anonymous `buyerId`. Later specs only add pages and calls.
