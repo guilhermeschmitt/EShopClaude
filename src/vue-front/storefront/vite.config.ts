@@ -7,6 +7,10 @@ import vue from '@vitejs/plugin-vue';
 // No server.port: Aspire assigns the port.
 const basketUrl = process.env.services__basket__http__0;
 
+// Aspire's endpoint proxy keeps accepting connections for a stopped service and never answers. Without a timeout the
+// request hangs and the error never reaches the UI; with it, Vite answers 500 and the error toast shows.
+const PROXY_TIMEOUT_MS = 10_000;
+
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -20,6 +24,7 @@ export default defineConfig({
           '/api/basket': {
             target: basketUrl,
             changeOrigin: true,
+            proxyTimeout: PROXY_TIMEOUT_MS,
             rewrite: (path) => path.replace(/^\/api\/basket/, ''),
           },
         }
