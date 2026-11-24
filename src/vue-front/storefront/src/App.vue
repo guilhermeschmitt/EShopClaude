@@ -1,5 +1,12 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import AppHeader from '@/components/AppHeader.vue';
+import { refreshBasket } from '@/stores/basket';
+
+// Load the basket once on start, for the header badge. refreshBasket never rejects.
+onMounted(() => {
+  void refreshBasket();
+});
 </script>
 
 <template>
@@ -7,6 +14,7 @@ import AppHeader from '@/components/AppHeader.vue';
   <main class="app-main">
     <RouterView />
   </main>
+  <EToast />
 </template>
 
 <style scoped>
