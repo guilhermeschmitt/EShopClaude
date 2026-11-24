@@ -59,4 +59,11 @@ await builder
     .withEnvironment('SPRING_DATA_REDIS_PORT', await redis.port())
     .withEnvironment('SPRING_DATA_REDIS_PASSWORD', redis.passwordParameter.get());
 
+// Storefront: Vue 3 + Vite dev server. No service references yet (the first page that calls a service adds them).
+await builder
+    .addViteApp('storefront', './vue-front/storefront')
+    .withNpm({ install: true })
+    .withExternalHttpEndpoints()
+    .withHttpHealthCheck({ path: '/' });
+
 await builder.build().run();
