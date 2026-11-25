@@ -1,6 +1,6 @@
 # storefront 05 — category filter
 
-**Status:** Not started
+**Status:** Done (94728cc)
 
 ## Goal
 Let the buyer narrow the product grid on `/` to one category, chosen from a vue-base `ESelect` filled from Catalog's `GET /categories` with an "All" option. Like the page, the category lives in the URL (`/?category=Bags`), so a reload, a shared link and back/forward keep it. Choosing a category resets to page 1, and the pager follows the filtered `totalPages`. The filtering itself is done by Catalog (`GET /products?category=`), never in the browser. Search (storefront/06) adds `q` the same way later.
