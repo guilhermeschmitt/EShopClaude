@@ -1,6 +1,6 @@
 # storefront 06 — product search
 
-**Status:** Not started
+**Status:** Done (ca76da0)
 
 ## Goal
 Let the buyer search the product grid on `/` by name, with a vue-base search box next to the category select. A search runs on submit (Enter or a **Search** button), never while typing. Like `page` and `category`, the term lives in the URL (`/?category=Drinkware&q=mug`), so a reload, a shared link and back/forward keep it. A new search keeps the category and resets to page 1, a new category keeps the search and resets to page 1, and the pager keeps both. The matching itself is done by Catalog (`GET /products?q=`, a case-insensitive "contains" match on the name), never in the browser. This completes the "filter by category, search and page through products" step of the journey (PROJECT.md §10).
