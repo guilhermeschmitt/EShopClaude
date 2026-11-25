@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import ProductPager from '@/components/ProductPager.vue';
 import { showError } from '@/errors';
 import { formatPrice } from '@/format';
 import { CatalogService, type Product } from '@/services/CatalogService';
@@ -8,21 +10,52 @@ const PAGE_SIZE = 8;
 
 // Created in setup, after Core.init has set Core.baseURL.
 const service = new CatalogService();
+const route = useRoute();
+const router = useRouter();
 
+/** `?page=N` is 1-based; anything but a positive integer means page 1. */
+function parsePage(value: unknown): number {
+  return typeof value === 'string' && /^[1-9]\d*$/.test(value) ? Number(value) : 1;
+}
+
+const page = computed(() => parsePage(route.query.page));
 const products = ref<Product[]>([]);
+const totalPages = ref(0);
 const loading = ref(true);
 const failed = ref(false);
 
-onMounted(async () => {
+// Id of the latest request; an older response that settles later is dropped.
+let latest = 0;
+
+async function load(): Promise<void> {
+  const id = ++latest;
+  loading.value = true;
+  failed.value = false;
+  products.value = [];
   try {
-    products.value = (await service.listProducts({ page: 0, size: PAGE_SIZE })).items;
+    const result = await service.listProducts({ page: page.value - 1, size: PAGE_SIZE });
+    if (id !== latest) return;
+    products.value = result.items;
+    totalPages.value = result.totalPages;
   } catch (error) {
+    if (id !== latest) return;
     failed.value = true;
     showError('Could not load products', error);
   } finally {
-    loading.value = false;
+    if (id === latest) loading.value = false;
   }
-});
+}
+
+watch(page, () => void load(), { immediate: true });
+
+function onSelect(n: number): void {
+  if (n === page.value) {
+    // Clicking the current page only retries a failed load.
+    if (failed.value) void load();
+    return;
+  }
+  void router.push({ name: 'home', query: n === 1 ? {} : { page: String(n) } });
+}
 </script>
 
 <template>
@@ -44,6 +77,14 @@ onMounted(async () => {
   </ul>
 
   <EEmptyState v-else-if="!failed" icon="inventory_2" title="No products found" />
+
+  <ProductPager
+    v-if="totalPages > 1"
+    :page="page"
+    :total-pages="totalPages"
+    :disabled="loading"
+    @select="onSelect"
+  />
 </template>
 
 <style scoped>

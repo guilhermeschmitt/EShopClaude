@@ -20,7 +20,7 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | storefront | [01-storefront-shell](storefront/01-storefront-shell.md) | `feature/storefront-01-storefront-shell` | nothing | Done (cbfcc65) |
 | storefront | [02-cart-badge](storefront/02-cart-badge.md) | `feature/storefront-02-cart-badge` | storefront/01, basket/01 | Done (049f4be) |
 | storefront | [03-product-grid](storefront/03-product-grid.md) | `feature/storefront-03-product-grid` | storefront/01, catalog/03 | Done (5044b4b) |
-| storefront | [04-product-pager](storefront/04-product-pager.md) | `feature/storefront-04-product-pager` | storefront/03, catalog/03 | Not started |
+| storefront | [04-product-pager](storefront/04-product-pager.md) | `feature/storefront-04-product-pager` | storefront/03, catalog/03 | Done (1711aaf) |
 | storefront | [05-category-filter](storefront/05-category-filter.md) | `feature/storefront-05-category-filter` | storefront/04, catalog/05 | Not started |
 | storefront | [06-product-search](storefront/06-product-search.md) | `feature/storefront-06-product-search` | storefront/05, catalog/03 | Not started |
 | storefront | [07-add-to-cart](storefront/07-add-to-cart.md) | `feature/storefront-07-add-to-cart` | storefront/02, storefront/03, basket/02 | Not started |
