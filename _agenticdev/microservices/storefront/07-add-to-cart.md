@@ -1,6 +1,6 @@
 # storefront 07 — add to cart
 
-**Status:** Not started
+**Status:** Done (bd97a18)
 
 ## Goal
 Let the buyer add a product from its card on `/`. Basket looks the price up itself, so the page sends only the product id and a quantity of 1. The basket that the POST returns becomes the shared basket state, so the header badge updates with no extra request. This completes the "add two different products, and add one of them twice" step of the journey (PROJECT.md §10).
