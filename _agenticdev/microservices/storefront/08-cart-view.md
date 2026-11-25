@@ -1,6 +1,6 @@
 # storefront 08 — cart view
 
-**Status:** Not started
+**Status:** Done (4dfdc91)
 
 ## Goal
 Show the basket on `/cart`: its lines and total exactly as Basket returns them. The page reads the shared basket state that the header badge already uses, so it sends no request of its own. It gives storefront/09 (quantity +/- and remove) and storefront/10 (**Checkout**) a page to build on, and it makes the "cart" step of the journey visible (PROJECT.md §6, §10).

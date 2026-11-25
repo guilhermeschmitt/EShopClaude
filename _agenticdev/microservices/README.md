@@ -24,7 +24,7 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | storefront | [05-category-filter](storefront/05-category-filter.md) | `feature/storefront-05-category-filter` | storefront/04, catalog/05 | Done (94728cc) |
 | storefront | [06-product-search](storefront/06-product-search.md) | `feature/storefront-06-product-search` | storefront/05, catalog/03 | Done (ca76da0) |
 | storefront | [07-add-to-cart](storefront/07-add-to-cart.md) | `feature/storefront-07-add-to-cart` | storefront/02, storefront/03, basket/02 | Done (bd97a18) |
-| storefront | [08-cart-view](storefront/08-cart-view.md) | `feature/storefront-08-cart-view` | storefront/02, basket/01 | Not started |
+| storefront | [08-cart-view](storefront/08-cart-view.md) | `feature/storefront-08-cart-view` | storefront/02, basket/01 | Done (4dfdc91) |
 | storefront | [09-cart-adjust](storefront/09-cart-adjust.md) | `feature/storefront-09-cart-adjust` | storefront/08, basket/03 | Not started |
 | storefront | [10-checkout-review](storefront/10-checkout-review.md) | `feature/storefront-10-checkout-review` | storefront/08, basket/01 | Not started |
 | storefront | [11-my-orders](storefront/11-my-orders.md) | `feature/storefront-11-my-orders` | storefront/01, ordering/03 | Not started |
