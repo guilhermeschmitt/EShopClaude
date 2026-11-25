@@ -35,8 +35,8 @@ _agenticdev/
 
 ## The cycle, per spec
 1. **Pick** the next spec: the lowest-numbered spec in its service whose dependencies are all Done.
-2. **Branch:** create `feature/<service>-<NN>-<short-name>` from an up-to-date `main`, and commit the spec file as the first commit.
-3. **Fresh session:** start a new Claude Code session and point it at the spec file only.
+2. **Fresh session:** start a new Claude Code session (`/clear`) and point it at the spec file only.
+3. **Branch:** in that session, create `feature/<service>-<NN>-<short-name>` from an up-to-date `main`, and commit the spec file as the first commit.
 4. **Plan:** enter plan mode, produce the plan, and a human approves it before any code.
 5. **Implement** in auto mode, following the approved plan, and commit on the branch as you go.
 6. **Verify manually:** run the pre-commit checks below and walk the spec's Definition of Done.
