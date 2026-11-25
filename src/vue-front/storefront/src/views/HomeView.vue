@@ -20,18 +20,23 @@ function parsePage(value: unknown): number {
   return typeof value === 'string' && /^[1-9]\d*$/.test(value) ? Number(value) : 1;
 }
 
-/** `?category=` is sent to Catalog as typed; missing, blank or repeated means All (`''`). */
-function parseCategory(value: unknown): string {
+/** `?category=` / `?q=` are sent to Catalog as typed; missing, blank or repeated means unset (`''`). */
+function parseFilter(value: unknown): string {
   return typeof value === 'string' && value.trim() !== '' ? value : '';
 }
 
-/** Query for `/`: `category` when set, `page` only past page 1. */
-function homeQuery(c: string, n: number): Record<string, string> {
-  return { ...(c ? { category: c } : {}), ...(n === 1 ? {} : { page: String(n) }) };
+/** Query for `/`: `category` and `q` when set, `page` only past page 1. */
+function homeQuery(c: string, s: string, n: number): Record<string, string> {
+  return {
+    ...(c ? { category: c } : {}),
+    ...(s ? { q: s } : {}),
+    ...(n === 1 ? {} : { page: String(n) }),
+  };
 }
 
 const page = computed(() => parsePage(route.query.page));
-const category = computed(() => parseCategory(route.query.category));
+const category = computed(() => parseFilter(route.query.category));
+const search = computed(() => parseFilter(route.query.q));
 const products = ref<Product[]>([]);
 const totalPages = ref(0);
 const loading = ref(true);
@@ -50,6 +55,7 @@ async function load(): Promise<void> {
       page: page.value - 1,
       size: PAGE_SIZE,
       ...(category.value ? { category: category.value } : {}),
+      ...(search.value ? { q: search.value } : {}),
     });
     if (id !== latest) return;
     products.value = result.items;
@@ -63,7 +69,7 @@ async function load(): Promise<void> {
   }
 }
 
-watch([page, category], () => void load(), { immediate: true });
+watch([page, category, search], () => void load(), { immediate: true });
 
 function onSelect(n: number): void {
   if (n === page.value) {
@@ -71,7 +77,7 @@ function onSelect(n: number): void {
     if (failed.value) void load();
     return;
   }
-  void router.push({ name: 'home', query: homeQuery(category.value, n) });
+  void router.push({ name: 'home', query: homeQuery(category.value, search.value, n) });
 }
 
 // Categories load once, independently of the products; a failure leaves only "All".
@@ -96,25 +102,50 @@ onMounted(async () => {
 function onCategory(value: string | null): void {
   const c = value ?? '';
   if (c === category.value) return;
-  void router.push({ name: 'home', query: homeQuery(c, 1) });
+  void router.push({ name: 'home', query: homeQuery(c, search.value, 1) });
 }
+
+// The box mirrors the URL's search; typed text only takes effect on submit.
+const searchText = ref('');
+watch(
+  search,
+  (s) => {
+    searchText.value = s;
+  },
+  { immediate: true },
+);
+
+/** A new search keeps the category and resets to page 1; an unchanged one does nothing. */
+function onSearch(): void {
+  const s = searchText.value.trim();
+  if (s === search.value) return;
+  void router.push({ name: 'home', query: homeQuery(category.value, s, 1) });
+}
+
+const emptyDescription = computed(() => (search.value ? `No products match "${search.value}".` : ''));
 </script>
 
 <template>
   <h1>Products</h1>
 
   <div class="product-filters">
-    <ESelect
-      id="category-filter"
-      label="Category"
-      :options="categoryOptions"
-      :model-value="category"
-      :loading="categoriesLoading"
-      loading-label="Loading…"
-      :show-clear="false"
-      data-testid="category-filter"
-      @update:model-value="onCategory"
-    />
+    <div class="product-filters__category">
+      <ESelect
+        id="category-filter"
+        label="Category"
+        :options="categoryOptions"
+        :model-value="category"
+        :loading="categoriesLoading"
+        loading-label="Loading…"
+        :show-clear="false"
+        data-testid="category-filter"
+        @update:model-value="onCategory"
+      />
+    </div>
+    <form class="product-search" role="search" aria-label="Product search" @submit.prevent="onSearch">
+      <EInputText id="product-search" v-model="searchText" label="Search" type="search" data-testid="product-search" />
+      <EButton label="Search" native-type="submit" prepend-icon="search" data-testid="product-search-submit" />
+    </form>
   </div>
 
   <div v-if="loading" class="product-grid">
@@ -132,7 +163,12 @@ function onCategory(value: string | null): void {
     </li>
   </ul>
 
-  <EEmptyState v-else-if="!failed" icon="inventory_2" title="No products found" />
+  <EEmptyState
+    v-else-if="!failed"
+    icon="inventory_2"
+    title="No products found"
+    :description="emptyDescription"
+  />
 
   <ProductPager
     v-if="totalPages > 1"
@@ -145,8 +181,25 @@ function onCategory(value: string | null): void {
 
 <style scoped>
 .product-filters {
-  max-width: 260px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
   margin-bottom: 1rem;
+}
+.product-filters__category {
+  width: 260px;
+  max-width: 100%;
+}
+.product-search {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+.product-search > :first-child {
+  flex: 1;
 }
 .product-grid {
   display: grid;
