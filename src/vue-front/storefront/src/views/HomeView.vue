@@ -6,6 +6,7 @@ import { showError } from '@/errors';
 import { formatPrice } from '@/format';
 import { CatalogService, type Product } from '@/services/CatalogService';
 import { CategoryService } from '@/services/CategoryService';
+import { useBasket } from '@/stores/basket';
 
 const PAGE_SIZE = 8;
 
@@ -123,6 +124,20 @@ function onSearch(): void {
 }
 
 const emptyDescription = computed(() => (search.value ? `No products match "${search.value}".` : ''));
+
+// One add at a time: the clicked card's button loads and every other card's button is disabled until it settles.
+const { addItem } = useBasket();
+const addingId = ref<number | null>(null);
+
+async function onAdd(productId: number): Promise<void> {
+  if (addingId.value !== null) return;
+  addingId.value = productId;
+  try {
+    await addItem(productId);
+  } finally {
+    addingId.value = null;
+  }
+}
 </script>
 
 <template>
@@ -159,6 +174,16 @@ const emptyDescription = computed(() => (search.value ? `No products match "${se
         <p class="product-card__category">{{ product.category }}</p>
         <p v-if="product.description" class="product-card__description">{{ product.description }}</p>
         <p class="product-card__price" data-testid="product-price">{{ formatPrice(product.price) }}</p>
+        <EButton
+          class="product-card__add"
+          label="Add to cart"
+          prepend-icon="add_shopping_cart"
+          loading-label="Adding…"
+          :loading="addingId === product.id"
+          :disabled="addingId !== null && addingId !== product.id"
+          data-testid="add-to-cart"
+          @click="onAdd(product.id)"
+        />
       </ECard>
     </li>
   </ul>
@@ -233,5 +258,8 @@ const emptyDescription = computed(() => (search.value ? `No products match "${se
 .product-card__price {
   margin: 0;
   font-weight: 700;
+}
+.product-card__add {
+  margin-top: 0.75rem;
 }
 </style>
