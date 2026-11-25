@@ -27,7 +27,7 @@ export class CatalogService extends ApiService {
     return { baseURL: `${Core.baseURL as string}/catalog`, resource: 'products' };
   }
 
-  async listProducts(params: { page: number; size: number }): Promise<ProductPage> {
+  async listProducts(params: { page: number; size: number; category?: string }): Promise<ProductPage> {
     const response: { data: ProductPage } = await this.request.get('', { params });
     return response.data;
   }
