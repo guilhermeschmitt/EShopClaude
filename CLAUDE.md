@@ -32,7 +32,7 @@ Java services (`src/java-back/{catalog,basket,ordering}`) are standalone Maven p
 - Run a single test: `mvn -f src/java-back/<service>/pom.xml test -Dtest=ClassName#method`
 - Image: `docker build src/java-back/<service>`
 
-The storefront (`src/vue-front/storefront`, planned) will use `npm run build` and `npm run dev`.
+The storefront (`src/vue-front/storefront`) uses `npm run build` (`vue-tsc -b && vite build`) and `npm run dev`. Under Aspire it runs through `addViteApp`.
 
 ## Architecture
 
