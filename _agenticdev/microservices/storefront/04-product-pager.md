@@ -1,6 +1,6 @@
 # storefront 04 — product pager
 
-**Status:** Not started
+**Status:** Done (1711aaf)
 
 ## Goal
 Let the buyer page through all ~24 products on `/` with numbered page buttons under the grid. The page number lives in the URL (`/?page=2`), so a reload, a shared link and browser back/forward all keep the page. The category filter and search (storefront/05–06) add their own query parameters next to `page` and reset it to page 1.
