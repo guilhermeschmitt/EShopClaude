@@ -1,6 +1,6 @@
 # storefront 09 — cart adjust
 
-**Status:** Not started
+**Status:** Done (236bafb)
 
 ## Goal
 Let the buyer change quantities and remove lines on `/cart`. Remove stays in this spec because it is the same `PUT` with `quantity: 0`, so it can't be verified apart from +/-.
