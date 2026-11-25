@@ -28,4 +28,10 @@ export class BasketService extends ApiService {
     const response: { data: Basket } = await this.request.get(buyerId);
     return response.data;
   }
+
+  /** `POST /basket/{buyerId}/items`: one unit of the product. Basket looks the price up; none is sent. */
+  async addItem(buyerId: string, productId: number): Promise<Basket> {
+    const response: { data: Basket } = await this.request.post(`${buyerId}/items`, { productId, quantity: 1 });
+    return response.data;
+  }
 }

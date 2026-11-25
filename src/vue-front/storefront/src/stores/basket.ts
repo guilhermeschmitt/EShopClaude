@@ -3,7 +3,8 @@ import { getBuyerId } from '@/buyer';
 import { showError } from '@/errors';
 import { BasketService, type Basket } from '@/services/BasketService';
 
-// Shared basket state: loaded once on start; pages that change the basket call refreshBasket() afterwards.
+// Shared basket state: loaded once on start. Pages that change the basket either set it from the response
+// (addItem) or call refreshBasket() afterwards.
 const state = ref<Basket | null>(null);
 
 /** Last basket loaded; null before the first load completes and after a failed load. */
@@ -26,6 +27,17 @@ export async function refreshBasket(): Promise<void> {
   }
 }
 
+/** Adds one unit of a product; the basket Basket returns becomes the state. Never rejects: a failure leaves the
+ * state as it was and shows the error toast. */
+export async function addItem(productId: number): Promise<void> {
+  service ??= new BasketService();
+  try {
+    state.value = await service.addItem(getBuyerId(), productId);
+  } catch (error) {
+    showError('Could not add to cart', error);
+  }
+}
+
 export function useBasket() {
-  return { basket, itemCount, refreshBasket };
+  return { basket, itemCount, refreshBasket, addItem };
 }
