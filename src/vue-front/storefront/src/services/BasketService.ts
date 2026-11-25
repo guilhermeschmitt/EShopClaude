@@ -34,4 +34,11 @@ export class BasketService extends ApiService {
     const response: { data: Basket } = await this.request.post(`${buyerId}/items`, { productId, quantity: 1 });
     return response.data;
   }
+
+  /** `PUT /basket/{buyerId}/items/{productId}`: sets the line's quantity, and `0` removes the line. Only the quantity
+   * is sent. 404 when the basket has no such line. */
+  async updateQuantity(buyerId: string, productId: number, quantity: number): Promise<Basket> {
+    const response: { data: Basket } = await this.request.put(`${buyerId}/items/${productId}`, { quantity });
+    return response.data;
+  }
 }
