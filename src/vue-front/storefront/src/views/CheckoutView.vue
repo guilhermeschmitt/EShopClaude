@@ -2,21 +2,32 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { getBuyerId } from '@/buyer';
+import LineItems from '@/components/LineItems.vue';
+import OrderSummary from '@/components/OrderSummary.vue';
 import { showError } from '@/errors';
-import { formatPrice } from '@/format';
 import { BasketService } from '@/services/BasketService';
 import { useBasket } from '@/stores/basket';
 
 // Read-only review of the basket before ordering. It GETs the basket once on mount through the store, so it shows
 // Basket's current lines and total. Place order POSTs the checkout once (disabled while it runs), then opens the new
 // order and refreshes the badge; a failure shows a toast and keeps the page as it is.
-const { basket, status, refreshBasket } = useBasket();
+const { basket, itemCount, status, refreshBasket } = useBasket();
 const router = useRouter();
 // Created in setup, after Core.init has set Core.baseURL.
 const service = new BasketService();
 const items = computed(() => basket.value?.items ?? []);
 const total = computed(() => basket.value?.total ?? 0);
 const placing = ref(false);
+const retrying = ref(false);
+
+async function onRetry(): Promise<void> {
+  retrying.value = true;
+  try {
+    await refreshBasket();
+  } finally {
+    retrying.value = false;
+  }
+}
 
 onMounted(() => {
   void refreshBasket();
@@ -27,7 +38,8 @@ async function onPlaceOrder(): Promise<void> {
   placing.value = true;
   try {
     const orderId = await service.checkout(getBuyerId());
-    await router.push(`/orders/${orderId}`);
+    // Same URL as before; the history state tells the order page to show its "Order placed" confirmation.
+    await router.push({ path: `/orders/${orderId}`, state: { placed: true } });
     void refreshBasket();
   } catch (error) {
     showError('Could not place the order', error);
@@ -38,86 +50,75 @@ async function onPlaceOrder(): Promise<void> {
 </script>
 
 <template>
-  <h1>Checkout</h1>
+  <div class="page-head">
+    <h1>Checkout</h1>
+    <p v-if="status === 'ready' && items.length > 0" class="page-head__meta">Check your items, then place the order.</p>
+  </div>
 
-  <ECard v-if="status === 'loading'" loading />
+  <div v-if="status === 'loading'" class="shop-split">
+    <ECard loading />
+    <ECard loading />
+  </div>
 
-  <template v-else-if="status === 'ready' && items.length === 0">
-    <EEmptyState icon="shopping_cart" title="Your cart is empty" />
-    <RouterLink to="/cart" class="checkout-back">Back to cart</RouterLink>
-  </template>
-
-  <ECard v-else-if="status === 'ready'">
-    <table class="cart-table" aria-label="Order review">
-      <thead>
-        <tr>
-          <th scope="col">Product</th>
-          <th scope="col" class="cart-table__num">Unit price</th>
-          <th scope="col" class="cart-table__num">Quantity</th>
-          <th scope="col" class="cart-table__num">Line total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in items" :key="item.productId" data-testid="review-line">
-          <td>{{ item.productName }}</td>
-          <td class="cart-table__num">{{ formatPrice(item.unitPrice) }}</td>
-          <td class="cart-table__num" data-testid="line-quantity">{{ item.quantity }}</td>
-          <td class="cart-table__num" data-testid="line-total">{{ formatPrice(item.unitPrice * item.quantity) }}</td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr>
-          <th scope="row" colspan="3">Total</th>
-          <td class="cart-table__num" data-testid="review-total">{{ formatPrice(total) }}</td>
-        </tr>
-      </tfoot>
-    </table>
+  <ECard v-else-if="status === 'failed'">
+    <EEmptyState
+      icon="cloud_off"
+      title="Your cart didn’t load"
+      description="Checkout needs your cart. Check your connection, then try again."
+    >
+      <EButton
+        label="Try again"
+        prepend-icon="refresh"
+        :loading="retrying"
+        loading-label="Trying again…"
+        data-testid="retry"
+        @click="onRetry"
+      />
+    </EEmptyState>
   </ECard>
 
-  <div v-if="status === 'ready' && items.length > 0" class="checkout-actions">
-    <EButton
-      label="Place order"
-      type="primary"
-      prepend-icon="shopping_bag"
-      loading-label="Placing order…"
-      :loading="placing"
-      :disabled="placing"
-      data-testid="place-order"
-      @click="onPlaceOrder"
-    />
+  <ECard v-else-if="status === 'ready' && items.length === 0">
+    <EEmptyState
+      icon="shopping_cart"
+      title="Your cart is empty"
+      description="There is nothing to check out. Orders you already placed are in My orders."
+    >
+      <div class="checkout-empty-actions">
+        <EButton label="Back to cart" to="/cart" outlined prepend-icon="arrow_back" class="checkout-back" />
+        <EButton label="My orders" to="/orders" outlined prepend-icon="receipt_long" />
+      </div>
+    </EEmptyState>
+  </ECard>
+
+  <div v-else-if="status === 'ready'" class="shop-split">
+    <LineItems :items="items" label="Order review" line-testid="review-line" />
+    <div class="shop-split__aside">
+      <OrderSummary heading="Order total" :item-count="itemCount" :total="total" total-testid="review-total">
+        <EButton
+          label="Place order"
+          type="primary"
+          size="large"
+          prepend-icon="shopping_bag"
+          loading-label="Placing order…"
+          :loading="placing"
+          :disabled="placing"
+          data-testid="place-order"
+          @click="onPlaceOrder"
+        />
+        <RouterLink to="/cart" class="shop-link checkout-edit">Edit cart</RouterLink>
+      </OrderSummary>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.cart-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.cart-table th,
-.cart-table td {
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  vertical-align: middle;
-}
-.cart-table tr {
-  border-bottom: 1px solid var(--e-primitive-slate-200, #dee1e7);
-}
-.cart-table tfoot tr {
-  border-bottom: none;
-}
-.cart-table .cart-table__num {
-  text-align: right;
-}
-.cart-table tfoot {
-  font-weight: 700;
-}
-.checkout-actions {
+.checkout-empty-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--e-space-2);
 }
-.checkout-back {
-  display: inline-block;
-  margin-top: 0.75rem;
+.checkout-edit {
+  align-self: center;
 }
 </style>

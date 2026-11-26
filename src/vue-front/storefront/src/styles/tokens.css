@@ -1,0 +1,175 @@
+/*
+ * EShop theme: remaps @guilherme/vue-base's --e-* tokens to the design system in design-system/eshop/MASTER.md.
+ * Imported after vue-base's style.css, so these declarations win at equal specificity. Views never use raw hex values;
+ * they use the --e-* tokens and the --shop-* tokens below.
+ */
+:root {
+  /* Type */
+  --e-font-family-base: 'Nunito Sans Variable', 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --e-font-family-heading: 'Rubik Variable', 'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --shop-font-number: var(--e-font-family-heading);
+  /* 14px floor: vue-base uses xs for field labels and captions. */
+  --e-font-size-xs: 0.875rem;
+  --shop-font-size-title: clamp(1.75rem, 1.4rem + 1.5vw, 2.25rem);
+
+  /* Radius */
+  --e-radius-sm: 6px;
+  --e-radius-md: 10px;
+  --e-radius-lg: 14px;
+  --e-radius-xl: 20px;
+
+  /* Layout */
+  --shop-content-width: 1200px;
+  --shop-gutter: 1rem;
+  --shop-header-height: 3.5rem;
+  --shop-target: 2.75rem; /* 44px minimum touch target */
+
+  /* Colour, light */
+  --e-color-bg: #f3f8f5;
+  --e-color-surface: #ffffff;
+  --e-color-surface-raised: #ffffff;
+  --e-color-surface-hover: #eaf3ee;
+  --e-color-border: #d5e4dc;
+  --e-color-border-strong: #a9c5b7;
+  --e-color-text: #10231d;
+  --e-color-text-secondary: #475569;
+  --e-color-text-disabled: #8a9a93;
+  --e-color-text-inverse: #ffffff;
+  --e-color-primary: #047857;
+  --e-color-primary-hover: #065f46;
+  --e-color-primary-active: #064e3b;
+  --e-color-primary-subtle: #e3f6ec;
+  --e-color-primary-border: #6ee7b7;
+  --e-color-primary-contrast: #ffffff;
+  --e-color-secondary: #c2410c;
+  --e-color-secondary-hover: #9a3412;
+  --e-color-secondary-active: #7c2d12;
+  --e-color-secondary-subtle: #fff0e6;
+  --e-color-secondary-border: #fdba74;
+  --e-color-secondary-contrast: #ffffff;
+  --e-color-success: #15803d;
+  --e-color-success-subtle: #e8f7ee;
+  --e-color-success-border: #166534; /* also the success button hover */
+  --e-color-danger: #dc2626;
+  --e-color-danger-subtle: #fdecec;
+  --e-color-skeleton: #e6efea;
+  --e-color-skeleton-shine: #f6faf8;
+  --e-shadow-sm: 0 1px 2px rgb(16 35 29 / 6%);
+  --e-shadow-md: 0 10px 24px rgb(16 35 29 / 10%), 0 2px 6px rgb(16 35 29 / 6%);
+
+  /* Category blocks: tint (tile background) and ink (icon and chip text), 4.5:1 or better */
+  --shop-cat-apparel-tint: #eef0ff;
+  --shop-cat-apparel-ink: #4338ca;
+  --shop-cat-bags-tint: #fff0e6;
+  --shop-cat-bags-ink: #b4400b;
+  --shop-cat-drinkware-tint: #e4f5fa;
+  --shop-cat-drinkware-ink: #0e7490;
+  --shop-cat-stationery-tint: #fbeefb;
+  --shop-cat-stationery-ink: #a21caf;
+  --shop-cat-other-tint: #edf1ef;
+  --shop-cat-other-ink: #475569;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --shop-gutter: 1.5rem;
+    --shop-header-height: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --shop-gutter: 2rem;
+  }
+}
+
+/* Colour, dark: same selectors as vue-base so the system preference and data-theme both work. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --e-color-bg: #0b1411;
+    --e-color-surface: #111d19;
+    --e-color-surface-raised: #172722;
+    --e-color-surface-hover: #172722;
+    --e-color-border: #24382f;
+    --e-color-border-strong: #335046;
+    --e-color-text: #ecf5f0;
+    --e-color-text-secondary: #a8b8b0;
+    --e-color-text-disabled: #5f7369;
+    --e-color-text-inverse: #10231d;
+    --e-color-primary: #34d399;
+    --e-color-primary-hover: #6ee7b7;
+    --e-color-primary-active: #a7f3d0;
+    --e-color-primary-subtle: rgb(52 211 153 / 14%);
+    --e-color-primary-border: #047857;
+    --e-color-primary-contrast: #04241a;
+    --e-color-secondary: #fb923c;
+    --e-color-secondary-hover: #fdba74;
+    --e-color-secondary-active: #fed7aa;
+    --e-color-secondary-subtle: rgb(251 146 60 / 14%);
+    --e-color-secondary-border: #9a3412;
+    --e-color-secondary-contrast: #10231d;
+    --e-color-success: #4ade80;
+    --e-color-success-subtle: rgb(74 222 128 / 12%);
+    --e-color-success-border: #86efac;
+    --e-color-danger: #f87171;
+    --e-color-danger-subtle: rgb(248 113 113 / 14%);
+    --e-color-skeleton: #172722;
+    --e-color-skeleton-shine: #1f332c;
+    --e-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --e-shadow-md: 0 10px 24px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%);
+    --shop-cat-apparel-tint: #1e1f45;
+    --shop-cat-apparel-ink: #a5b4fc;
+    --shop-cat-bags-tint: #3a2113;
+    --shop-cat-bags-ink: #fdba74;
+    --shop-cat-drinkware-tint: #0f2d36;
+    --shop-cat-drinkware-ink: #67e8f9;
+    --shop-cat-stationery-tint: #371a39;
+    --shop-cat-stationery-ink: #f0abfc;
+    --shop-cat-other-tint: #1c2925;
+    --shop-cat-other-ink: #a8b8b0;
+  }
+}
+
+:root[data-theme='dark'] {
+  --e-color-bg: #0b1411;
+  --e-color-surface: #111d19;
+  --e-color-surface-raised: #172722;
+  --e-color-surface-hover: #172722;
+  --e-color-border: #24382f;
+  --e-color-border-strong: #335046;
+  --e-color-text: #ecf5f0;
+  --e-color-text-secondary: #a8b8b0;
+  --e-color-text-disabled: #5f7369;
+  --e-color-text-inverse: #10231d;
+  --e-color-primary: #34d399;
+  --e-color-primary-hover: #6ee7b7;
+  --e-color-primary-active: #a7f3d0;
+  --e-color-primary-subtle: rgb(52 211 153 / 14%);
+  --e-color-primary-border: #047857;
+  --e-color-primary-contrast: #04241a;
+  --e-color-secondary: #fb923c;
+  --e-color-secondary-hover: #fdba74;
+  --e-color-secondary-active: #fed7aa;
+  --e-color-secondary-subtle: rgb(251 146 60 / 14%);
+  --e-color-secondary-border: #9a3412;
+  --e-color-secondary-contrast: #10231d;
+  --e-color-success: #4ade80;
+  --e-color-success-subtle: rgb(74 222 128 / 12%);
+  --e-color-success-border: #86efac;
+  --e-color-danger: #f87171;
+  --e-color-danger-subtle: rgb(248 113 113 / 14%);
+  --e-color-skeleton: #172722;
+  --e-color-skeleton-shine: #1f332c;
+  --e-shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+  --e-shadow-md: 0 10px 24px rgb(0 0 0 / 45%), 0 2px 6px rgb(0 0 0 / 30%);
+  --shop-cat-apparel-tint: #1e1f45;
+  --shop-cat-apparel-ink: #a5b4fc;
+  --shop-cat-bags-tint: #3a2113;
+  --shop-cat-bags-ink: #fdba74;
+  --shop-cat-drinkware-tint: #0f2d36;
+  --shop-cat-drinkware-ink: #67e8f9;
+  --shop-cat-stationery-tint: #371a39;
+  --shop-cat-stationery-ink: #f0abfc;
+  --shop-cat-other-tint: #1c2925;
+  --shop-cat-other-ink: #a8b8b0;
+}

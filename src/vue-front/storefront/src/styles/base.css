@@ -1,0 +1,224 @@
+/* Global base for the storefront. Tokens live in tokens.css; see design-system/eshop/MASTER.md. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Anchors and focused elements stop below the sticky header. */
+  scroll-padding-top: calc(var(--shop-header-height) + var(--e-space-4));
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button,
+input,
+select,
+label {
+  touch-action: manipulation;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--e-color-bg);
+  color: var(--e-color-text);
+  font-family: var(--e-font-family-base);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--e-font-family-heading);
+  line-height: var(--e-line-height-tight);
+  color: var(--e-color-text);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+a {
+  color: var(--e-color-primary);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--e-color-primary-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--e-color-primary);
+  outline-offset: 2px;
+}
+
+/* Every number (price, quantity, total, order id) uses aligned figures. */
+.num {
+  font-family: var(--shop-font-number);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Page heading: title with one line of context, left-aligned. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--e-space-4);
+  row-gap: var(--e-space-1);
+  margin-bottom: var(--e-space-6);
+}
+
+.page-head h1 {
+  font-size: var(--shop-font-size-title);
+  font-weight: 700;
+  letter-spacing: var(--e-letter-spacing-tight);
+}
+
+.page-head__meta {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--e-color-text-secondary);
+}
+
+/* Lines + summary: stacked on phones and tablets, summary sidebar from 960px. */
+.shop-split {
+  display: grid;
+  gap: var(--e-space-6);
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .shop-split {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+  }
+  .shop-split__aside {
+    position: sticky;
+    top: calc(var(--shop-header-height) + var(--e-space-6));
+  }
+}
+
+/* A text link with a full touch target (used for secondary navigation like "Back to cart"). */
+.shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-space-1);
+  min-height: var(--shop-target);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.shop-link:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Browser surfaces carry the palette too. */
+::selection {
+  background: var(--e-color-primary-subtle);
+  color: var(--e-color-text);
+}
+
+html {
+  accent-color: var(--e-color-primary);
+  caret-color: var(--e-color-primary);
+  scrollbar-color: var(--e-color-border-strong) var(--e-color-bg);
+}
+
+/* vue-base's empty-state title is body-sized; in this shop it heads the whole page body, so it reads as a heading. */
+.e-empty-state .e-empty-state__title {
+  font-family: var(--e-font-family-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.e-empty-state .e-empty-state__description {
+  max-width: 42ch;
+  font-size: 1rem;
+}
+
+/* vue-base marks a focused field with a faint border change only; give it the same ring as every other control. */
+.e-input-wrapper .e-input-wrapper__box:focus-within {
+  border-color: var(--e-color-primary);
+  outline: 2px solid var(--e-color-primary);
+  outline-offset: 1px;
+}
+
+/* Touch targets: vue-base's medium button and text input are a few pixels short of 44px on phones. */
+@media (max-width: 639.98px) {
+  .e-button {
+    min-height: var(--shop-target);
+  }
+  .e-input-wrapper .e-input-wrapper__box input {
+    min-height: 1.75rem;
+  }
+}
+
+/* The whole field box is the target: the label's hit area (it is tied to the input) covers the box padding, with the
+   input and the box's own buttons (clear, chevron) above it. */
+.e-input-wrapper .e-input-wrapper__box {
+  position: relative;
+}
+.e-input-wrapper .e-input-wrapper__box .e-input-wrapper__label::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.e-input-wrapper .e-input-wrapper__box input,
+.e-input-wrapper .e-input-wrapper__box button {
+  position: relative;
+  z-index: 1;
+}
+
+/* Toasts: below the sticky header, so the nav and cart badge stay visible; on phones, along the bottom edge, so they
+   don't cover the page title and controls. */
+.e-toast.e-toast {
+  top: calc(var(--shop-header-height) + var(--e-space-3));
+}
+
+@media (max-width: 639.98px) {
+  .e-toast.e-toast {
+    top: auto;
+    right: var(--shop-gutter);
+    bottom: calc(var(--e-space-3) + env(safe-area-inset-bottom, 0px));
+    left: var(--shop-gutter);
+    width: auto;
+    max-width: none;
+  }
+}
