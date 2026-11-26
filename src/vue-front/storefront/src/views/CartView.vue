@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { formatPrice } from '@/format';
 import { useBasket } from '@/stores/basket';
 
 // Reads the shared basket (App.vue loads it on start) and never GETs it itself. +/- and remove send a PUT whose
 // response becomes the shared basket, so the lines, total and header badge update from that one request.
+// Checkout navigates to /checkout; it is disabled when the cart is empty or while a PUT runs.
 const { basket, status, updateQuantity } = useBasket();
+const router = useRouter();
 const items = computed(() => basket.value?.items ?? []);
 const total = computed(() => basket.value?.total ?? 0);
 
@@ -20,6 +23,10 @@ async function onAdjust(productId: number, quantity: number): Promise<void> {
   } finally {
     updatingId.value = null;
   }
+}
+
+function onCheckout(): void {
+  void router.push('/checkout');
 }
 </script>
 
@@ -95,6 +102,17 @@ async function onAdjust(productId: number, quantity: number): Promise<void> {
       </tfoot>
     </table>
   </ECard>
+
+  <div v-if="status === 'ready'" class="cart-actions">
+    <EButton
+      label="Checkout"
+      type="primary"
+      prepend-icon="shopping_cart_checkout"
+      :disabled="items.length === 0 || updatingId !== null"
+      data-testid="checkout-button"
+      @click="onCheckout"
+    />
+  </div>
 </template>
 
 <style scoped>
@@ -128,6 +146,11 @@ async function onAdjust(productId: number, quantity: number): Promise<void> {
 .cart-qty__value {
   min-width: 2ch;
   text-align: center;
+}
+.cart-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }
 .cart-browse {
   display: inline-block;
