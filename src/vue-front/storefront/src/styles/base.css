@@ -1,0 +1,136 @@
+/* Global base for the storefront. Tokens live in tokens.css; see design-system/eshop/MASTER.md. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--e-color-bg);
+  color: var(--e-color-text);
+  font-family: var(--e-font-family-base);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--e-font-family-heading);
+  line-height: var(--e-line-height-tight);
+  color: var(--e-color-text);
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--e-color-primary);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--e-color-primary-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--e-color-primary);
+  outline-offset: 2px;
+}
+
+/* Every number (price, quantity, total, order id) uses aligned figures. */
+.num {
+  font-family: var(--shop-font-number);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Page heading: title with one line of context, left-aligned. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--e-space-4);
+  row-gap: var(--e-space-1);
+  margin-bottom: var(--e-space-6);
+}
+
+.page-head h1 {
+  font-size: var(--shop-font-size-title);
+  font-weight: 700;
+  letter-spacing: var(--e-letter-spacing-tight);
+}
+
+.page-head__meta {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--e-color-text-secondary);
+}
+
+/* Lines + summary: stacked on phones and tablets, summary sidebar from 960px. */
+.shop-split {
+  display: grid;
+  gap: var(--e-space-6);
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .shop-split {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+  }
+  .shop-split__aside {
+    position: sticky;
+    top: calc(var(--shop-header-height) + var(--e-space-6));
+  }
+}
+
+/* A text link with a full touch target (used for secondary navigation like "Back to cart"). */
+.shop-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-space-1);
+  min-height: var(--shop-target);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.shop-link:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import ProductCard from '@/components/ProductCard.vue';
 import ProductPager from '@/components/ProductPager.vue';
 import { showError } from '@/errors';
-import { formatPrice } from '@/format';
 import { CatalogService, type Product } from '@/services/CatalogService';
 import { CategoryService } from '@/services/CategoryService';
 import { useBasket } from '@/stores/basket';
@@ -40,6 +40,7 @@ const category = computed(() => parseFilter(route.query.category));
 const search = computed(() => parseFilter(route.query.q));
 const products = ref<Product[]>([]);
 const totalPages = ref(0);
+const totalItems = ref(0);
 const loading = ref(true);
 const failed = ref(false);
 
@@ -61,6 +62,7 @@ async function load(): Promise<void> {
     if (id !== latest) return;
     products.value = result.items;
     totalPages.value = result.totalPages;
+    totalItems.value = result.totalItems;
   } catch (error) {
     if (id !== latest) return;
     failed.value = true;
@@ -123,7 +125,21 @@ function onSearch(): void {
   void router.push({ name: 'home', query: homeQuery(category.value, s, 1) });
 }
 
-const emptyDescription = computed(() => (search.value ? `No products match "${search.value}".` : ''));
+const emptyDescription = computed(() => {
+  if (search.value) {
+    const where = category.value ? ` in ${category.value}` : '';
+    return `Nothing matches "${search.value}"${where}. Try another word or clear the search.`;
+  }
+  if (category.value) return `There are no products in ${category.value} right now.`;
+  return '';
+});
+
+const resultCount = computed(() => (totalItems.value === 1 ? '1 product' : `${totalItems.value} products`));
+
+/** Empty-state action: drops the search (keeping the category), or the category when there is no search. */
+function onClearFilters(): void {
+  void router.push({ name: 'home', query: homeQuery(search.value ? category.value : '', '', 1) });
+}
 
 // One add at a time: the clicked card's button loads and every other card's button is disabled until it settles.
 const { addItem } = useBasket();
@@ -141,7 +157,11 @@ async function onAdd(productId: number): Promise<void> {
 </script>
 
 <template>
-  <h1>Products</h1>
+  <div class="page-head">
+    <h1>Products</h1>
+    <p v-if="!loading && !failed" class="page-head__meta num" role="status" data-testid="product-count">
+{{ resultCount }}</p>
+  </div>
 
   <div class="product-filters">
     <div class="product-filters__category">
@@ -158,42 +178,55 @@ async function onAdd(productId: number): Promise<void> {
       />
     </div>
     <form class="product-search" role="search" aria-label="Product search" @submit.prevent="onSearch">
-      <EInputText id="product-search" v-model="searchText" label="Search" type="search" data-testid="product-search" />
+      <EInputText
+        id="product-search"
+        v-model="searchText"
+        class="product-search__input"
+        label="Search"
+        type="search"
+        autocomplete="off"
+        data-testid="product-search"
+      />
       <EButton label="Search" native-type="submit" prepend-icon="search" data-testid="product-search-submit" />
     </form>
   </div>
 
-  <div v-if="loading" class="product-grid">
-    <ECard v-for="n in PAGE_SIZE" :key="n" loading />
-  </div>
-
-  <ul v-else-if="products.length" class="product-grid" aria-label="Products">
-    <li v-for="product in products" :key="product.id" class="product-card" data-testid="product-card">
-      <ECard>
-        <h2 class="product-card__name">{{ product.name }}</h2>
-        <p class="product-card__category">{{ product.category }}</p>
-        <p v-if="product.description" class="product-card__description">{{ product.description }}</p>
-        <p class="product-card__price" data-testid="product-price">{{ formatPrice(product.price) }}</p>
-        <EButton
-          class="product-card__add"
-          label="Add to cart"
-          prepend-icon="add_shopping_cart"
-          loading-label="Adding…"
-          :loading="addingId === product.id"
-          :disabled="addingId !== null && addingId !== product.id"
-          data-testid="add-to-cart"
-          @click="onAdd(product.id)"
-        />
+  <ul v-if="loading" class="product-grid" aria-label="Loading products" aria-busy="true">
+    <li v-for="n in PAGE_SIZE" :key="n" class="product-grid__item">
+      <ECard flush class="product-skeleton">
+        <div class="product-skeleton__tile" />
+        <div class="product-skeleton__body">
+          <ESkeleton height="0.875rem" width="40%" />
+          <ESkeleton height="1.125rem" width="80%" />
+          <ESkeleton height="0.875rem" width="95%" />
+          <ESkeleton height="2.75rem" width="100%" radius="var(--e-radius-md)" />
+        </div>
       </ECard>
     </li>
   </ul>
 
-  <EEmptyState
-    v-else-if="!failed"
-    icon="inventory_2"
-    title="No products found"
-    :description="emptyDescription"
-  />
+  <ul v-else-if="products.length" class="product-grid" aria-label="Products">
+    <li v-for="product in products" :key="product.id" class="product-grid__item" data-testid="product-card">
+      <ProductCard
+        :product="product"
+        :adding="addingId === product.id"
+        :disabled="addingId !== null && addingId !== product.id"
+        @add="onAdd"
+      />
+    </li>
+  </ul>
+
+  <ECard v-else-if="!failed">
+    <EEmptyState icon="search_off" title="No products found" :description="emptyDescription">
+      <EButton
+        v-if="search || category"
+        :label="search ? 'Clear search' : 'Show all products'"
+        outlined
+        data-testid="clear-filters"
+        @click="onClearFilters"
+      />
+    </EEmptyState>
+  </ECard>
 
   <ProductPager
     v-if="totalPages > 1"
@@ -206,60 +239,75 @@ async function onAdd(productId: number): Promise<void> {
 
 <style scoped>
 .product-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.product-filters__category {
-  width: 260px;
-  max-width: 100%;
+  display: grid;
+  gap: var(--e-space-3);
+  margin-bottom: var(--e-space-6);
 }
 .product-search {
   display: flex;
-  align-items: flex-end;
-  gap: 0.5rem;
-  flex: 1 1 260px;
-  max-width: 420px;
+  align-items: stretch;
+  gap: var(--e-space-2);
 }
-.product-search > :first-child {
+.product-search__input {
   flex: 1;
+  min-width: 0;
+}
+.product-search > :deep(.e-button) {
+  min-height: var(--shop-target);
+  align-self: stretch;
 }
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--e-space-4);
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.product-card,
-.product-card > :deep(.e-card) {
+.product-grid__item {
+  min-width: 0;
+}
+.product-skeleton :deep(.e-card__body) {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: 0;
   height: 100%;
 }
-.product-card__name {
-  margin: 0 0 0.25rem;
-  font-size: 1.05rem;
-  font-weight: 700;
+.product-skeleton__tile {
+  min-height: 9rem;
+  background: var(--e-color-skeleton);
 }
-.product-card__category {
-  margin: 0 0 0.5rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--e-color-text-secondary, #5b6271);
+.product-skeleton__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-space-3);
+  padding: var(--e-space-4);
 }
-.product-card__description {
-  margin: 0 0 0.75rem;
-  font-size: 0.9rem;
-  color: var(--e-color-text-secondary, #5b6271);
+
+@media (min-width: 640px) {
+  .product-filters {
+    grid-template-columns: 16rem minmax(0, 28rem);
+    align-items: end;
+  }
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--e-space-5);
+  }
+  .product-skeleton :deep(.e-card__body) {
+    grid-template-columns: 1fr;
+  }
+  .product-skeleton__tile {
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+  .product-skeleton__body {
+    padding: var(--e-space-5);
+  }
 }
-.product-card__price {
-  margin: 0;
-  font-weight: 700;
-}
-.product-card__add {
-  margin-top: 0.75rem;
+
+@media (min-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>

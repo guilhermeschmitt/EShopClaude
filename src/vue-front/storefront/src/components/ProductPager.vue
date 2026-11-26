@@ -20,7 +20,7 @@ const labelId = (n: number): string => `${idPrefix}-page-${n}`;
         :aria-labelledby="labelId(n)"
         :aria-current="n === page ? 'page' : undefined"
         :outlined="n !== page"
-        size="small"
+        class="product-pager__page num"
         :disabled="disabled"
         data-testid="pager-page"
         @click="emit('select', n)"
@@ -34,7 +34,12 @@ const labelId = (n: number): string => `${idPrefix}-page-${n}`;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
+  gap: var(--e-space-2);
+  margin-top: var(--e-space-8);
+}
+.product-pager__page {
+  min-width: var(--shop-target);
+  min-height: var(--shop-target);
+  font-weight: 700;
 }
 </style>

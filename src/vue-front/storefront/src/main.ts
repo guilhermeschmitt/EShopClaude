@@ -3,6 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { Core } from '@guilherme/vue-base';
 import '@guilherme/vue-base/style.css';
 import '@guilherme/vue-base/icons.css';
+import '@fontsource-variable/rubik';
+import '@fontsource-variable/nunito-sans';
+// The theme comes after vue-base's stylesheet so its tokens win at equal specificity.
+import './styles/tokens.css';
+import './styles/base.css';
 import App from './App.vue';
 import { routes } from './router/routes';
 import { getBuyerId } from './buyer';
