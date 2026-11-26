@@ -10,20 +10,20 @@ const headingId = useId();
 <template>
   <section class="order-summary" :aria-labelledby="headingId">
     <ECard>
-    <h2 :id="headingId" class="order-summary__heading">{{ heading ?? 'Summary' }}</h2>
-    <dl class="order-summary__rows">
-      <div class="order-summary__row">
-        <dt>Items</dt>
-        <dd class="num">{{ itemCount }}</dd>
+      <h2 :id="headingId" class="order-summary__heading">{{ heading ?? 'Summary' }}</h2>
+      <dl class="order-summary__rows">
+        <div class="order-summary__row">
+          <dt>Items</dt>
+          <dd class="num">{{ itemCount }}</dd>
+        </div>
+        <div class="order-summary__row order-summary__row--total">
+          <dt>Total</dt>
+          <dd class="num" :data-testid="totalTestid">{{ formatPrice(total) }}</dd>
+        </div>
+      </dl>
+      <div v-if="$slots.default" class="order-summary__actions">
+        <slot />
       </div>
-      <div class="order-summary__row order-summary__row--total">
-        <dt>Total</dt>
-        <dd class="num" :data-testid="totalTestid">{{ formatPrice(total) }}</dd>
-      </div>
-    </dl>
-    <div v-if="$slots.default" class="order-summary__actions">
-      <slot />
-    </div>
     </ECard>
   </section>
 </template>

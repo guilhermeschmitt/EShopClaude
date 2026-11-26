@@ -134,3 +134,35 @@ a:hover {
     scroll-behavior: auto !important;
   }
 }
+
+/* Browser surfaces carry the palette too. */
+::selection {
+  background: var(--e-color-primary-subtle);
+  color: var(--e-color-text);
+}
+
+html {
+  accent-color: var(--e-color-primary);
+  caret-color: var(--e-color-primary);
+  scrollbar-color: var(--e-color-border-strong) var(--e-color-bg);
+}
+
+/* vue-base's empty-state title is body-sized; in this shop it heads the whole page body, so it reads as a heading. */
+.e-empty-state .e-empty-state__title {
+  font-family: var(--e-font-family-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.e-empty-state .e-empty-state__description {
+  max-width: 42ch;
+  font-size: 1rem;
+}
+
+/* vue-base marks a focused field with a faint border change only; give it the same ring as every other control. */
+.e-input-wrapper .e-input-wrapper__box:focus-within {
+  border-color: var(--e-color-primary);
+  outline: 2px solid var(--e-color-primary);
+  outline-offset: 1px;
+}

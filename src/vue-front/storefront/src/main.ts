@@ -21,5 +21,12 @@ const router = createRouter({ history: createWebHistory(), routes });
 // Registers vue-base's components globally and installs its route guard (no auth on these routes).
 await Core.init(app, router, routes, { baseURL: '/api' });
 
+// Each page names itself in the tab: "Cart – EShop"; an order page includes its number.
+router.afterEach((to) => {
+  const title = to.meta.title as string | undefined;
+  const page = to.name === 'order-detail' ? `Order #${String(to.params.id)}` : title;
+  document.title = page ? `${page} – EShop` : 'EShop';
+});
+
 app.use(router);
 app.mount('#app');
