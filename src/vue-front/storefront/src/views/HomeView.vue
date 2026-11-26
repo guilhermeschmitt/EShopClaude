@@ -128,7 +128,7 @@ function onSearch(): void {
 const emptyDescription = computed(() => {
   if (search.value) {
     const where = category.value ? ` in ${category.value}` : '';
-    return `Nothing matches "${search.value}"${where}. Try another word or clear the search.`;
+    return `Nothing matches “${search.value}”${where}. Try another word or clear the search.`;
   }
   if (category.value) return `There are no products in ${category.value} right now.`;
   return '';
@@ -147,6 +147,8 @@ const ADDED_MS = 1600;
 const { addItem } = useBasket();
 const addingId = ref<number | null>(null);
 const addedId = ref<number | null>(null);
+// Spoken confirmation for screen readers; the button's own text change is not announced.
+const addedMessage = ref('');
 let addedTimer: ReturnType<typeof setTimeout> | undefined;
 
 async function onAdd(productId: number): Promise<void> {
@@ -156,6 +158,8 @@ async function onAdd(productId: number): Promise<void> {
     if (await addItem(productId)) {
       clearTimeout(addedTimer);
       addedId.value = productId;
+      const name = products.value.find((p) => p.id === productId)?.name ?? 'Product';
+      addedMessage.value = `${name} added to cart.`;
       addedTimer = setTimeout(() => (addedId.value = null), ADDED_MS);
     }
   } finally {
@@ -173,6 +177,8 @@ onBeforeUnmount(() => clearTimeout(addedTimer));
       {{ resultCount }}
     </p>
   </div>
+
+  <p class="visually-hidden" role="status">{{ addedMessage }}</p>
 
   <div class="product-filters">
     <div class="product-filters__category">
@@ -195,6 +201,7 @@ onBeforeUnmount(() => clearTimeout(addedTimer));
         class="product-search__input"
         label="Search products"
         type="search"
+        name="q"
         autocomplete="off"
         data-testid="product-search"
       />
@@ -235,8 +242,8 @@ onBeforeUnmount(() => clearTimeout(addedTimer));
   <ECard v-else-if="failed">
     <EEmptyState
       icon="cloud_off"
-      title="Products didn't load"
-      description="The shop couldn't be reached. Check your connection, then try again."
+      title="Products didn’t load"
+      description="The shop couldn’t be reached. Check your connection, then try again."
     >
       <EButton label="Try again" prepend-icon="refresh" data-testid="retry" @click="load" />
     </EEmptyState>

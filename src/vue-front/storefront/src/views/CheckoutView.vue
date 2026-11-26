@@ -63,7 +63,7 @@ async function onPlaceOrder(): Promise<void> {
   <ECard v-else-if="status === 'failed'">
     <EEmptyState
       icon="cloud_off"
-      title="Your cart didn't load"
+      title="Your cart didn’t load"
       description="Checkout needs your cart. Check your connection, then try again."
     >
       <EButton

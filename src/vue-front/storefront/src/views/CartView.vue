@@ -85,7 +85,7 @@ function onCheckout(): void {
   </div>
 
   <ECard v-else-if="status === 'failed'">
-    <EEmptyState icon="cloud_off" title="Your cart didn't load" description="The cart couldn't be reached. Check your connection, then try again.">
+    <EEmptyState icon="cloud_off" title="Your cart didn’t load" description="The cart couldn’t be reached. Check your connection, then try again.">
       <EButton label="Try again" prepend-icon="refresh" :loading="retrying" loading-label="Trying again…" data-testid="retry" @click="onRetry" />
     </EEmptyState>
   </ECard>

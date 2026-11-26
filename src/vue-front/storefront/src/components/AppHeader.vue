@@ -16,7 +16,7 @@ const badgeText = computed(() => unreadBadge(itemCount.value) as string);
 <template>
   <header class="app-header">
     <div class="app-header__inner">
-      <RouterLink to="/" class="app-header__brand">
+      <RouterLink to="/" class="app-header__brand" translate="no">
         <span class="app-header__mark" aria-hidden="true"><EIcon icon="storefront" /></span>
         EShop
       </RouterLink>

@@ -94,8 +94,8 @@ onMounted(load);
   <ECard v-else-if="failed">
     <EEmptyState
       icon="cloud_off"
-      title="This order didn't load"
-      description="Orders couldn't be reached. Check your connection, then try again."
+      title="This order didn’t load"
+      description="Orders couldn’t be reached. Check your connection, then try again."
     >
       <EButton label="Try again" prepend-icon="refresh" data-testid="retry" @click="load" />
     </EEmptyState>
