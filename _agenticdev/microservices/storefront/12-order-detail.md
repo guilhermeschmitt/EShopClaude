@@ -1,6 +1,6 @@
 # storefront 12 — order detail
 
-**Status:** Not started
+**Status:** Done (5f99e8f)
 
 ## Goal
 Show one order on `/orders/:id`: its lines with the snapshot prices, the total and the date. This is the page that storefront/13 lands on after **Place order**, and the target of every link on `/orders`.
