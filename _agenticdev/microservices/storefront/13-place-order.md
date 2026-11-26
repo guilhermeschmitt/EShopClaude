@@ -1,6 +1,6 @@
 # storefront 13 — place order
 
-**Status:** Not started
+**Status:** Done (0c315b7)
 
 ## Goal
 Let the buyer place the order from `/checkout` with one call to Basket, then land on the new order. Disabling the button while the call runs and the failure path stay in this spec, because both are checked on that same single call.

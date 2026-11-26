@@ -29,4 +29,4 @@ One row per spec. Rules: [WOW.md](../WOW.md). Update the status when a spec is m
 | storefront | [10-checkout-review](storefront/10-checkout-review.md) | `feature/storefront-10-checkout-review` | storefront/08, basket/01 | Done (f6d47ad) |
 | storefront | [11-my-orders](storefront/11-my-orders.md) | `feature/storefront-11-my-orders` | storefront/01, ordering/03 | Done (432f626) |
 | storefront | [12-order-detail](storefront/12-order-detail.md) | `feature/storefront-12-order-detail` | storefront/11, ordering/04 | Done (5f99e8f) |
-| storefront | [13-place-order](storefront/13-place-order.md) | `feature/storefront-13-place-order` | storefront/10, storefront/12, basket/04 | Not started |
+| storefront | [13-place-order](storefront/13-place-order.md) | `feature/storefront-13-place-order` | storefront/10, storefront/12, basket/04 | Done (0c315b7) |
