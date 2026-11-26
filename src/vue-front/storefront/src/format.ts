@@ -5,3 +5,11 @@ const priceFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency
 export function formatPrice(value: number): string {
   return priceFormat.format(value);
 }
+
+// vue-base's date formatters are pt-BR too; dates show in en-US, in the browser's timezone.
+const dateFormat = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+
+/** ISO-8601 → `Nov 26, 2026, 3:04 PM` (in the browser's timezone). */
+export function formatDate(iso: string): string {
+  return dateFormat.format(new Date(iso));
+}
