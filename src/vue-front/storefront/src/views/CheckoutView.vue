@@ -1,17 +1,40 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { getBuyerId } from '@/buyer';
+import { showError } from '@/errors';
 import { formatPrice } from '@/format';
+import { BasketService } from '@/services/BasketService';
 import { useBasket } from '@/stores/basket';
 
 // Read-only review of the basket before ordering. It GETs the basket once on mount through the store, so it shows
-// Basket's current lines and total; nothing here changes the basket. storefront/13 adds Place order.
+// Basket's current lines and total. Place order POSTs the checkout once (disabled while it runs), then opens the new
+// order and refreshes the badge; a failure shows a toast and keeps the page as it is.
 const { basket, status, refreshBasket } = useBasket();
+const router = useRouter();
+// Created in setup, after Core.init has set Core.baseURL.
+const service = new BasketService();
 const items = computed(() => basket.value?.items ?? []);
 const total = computed(() => basket.value?.total ?? 0);
+const placing = ref(false);
 
 onMounted(() => {
   void refreshBasket();
 });
+
+async function onPlaceOrder(): Promise<void> {
+  if (placing.value) return;
+  placing.value = true;
+  try {
+    const orderId = await service.checkout(getBuyerId());
+    await router.push(`/orders/${orderId}`);
+    void refreshBasket();
+  } catch (error) {
+    showError('Could not place the order', error);
+  } finally {
+    placing.value = false;
+  }
+}
 </script>
 
 <template>
@@ -50,6 +73,19 @@ onMounted(() => {
       </tfoot>
     </table>
   </ECard>
+
+  <div v-if="status === 'ready' && items.length > 0" class="checkout-actions">
+    <EButton
+      label="Place order"
+      type="primary"
+      prepend-icon="shopping_bag"
+      loading-label="Placing order…"
+      :loading="placing"
+      :disabled="placing"
+      data-testid="place-order"
+      @click="onPlaceOrder"
+    />
+  </div>
 </template>
 
 <style scoped>
@@ -74,6 +110,11 @@ onMounted(() => {
 }
 .cart-table tfoot {
   font-weight: 700;
+}
+.checkout-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }
 .checkout-back {
   display: inline-block;

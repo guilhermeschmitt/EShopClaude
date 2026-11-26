@@ -15,6 +15,11 @@ export interface Basket {
   total: number;
 }
 
+/** `POST /basket/{buyerId}/checkout` → 201: the id of the order Ordering created. */
+export interface CheckoutResult {
+  orderId: number;
+}
+
 /**
  * Basket API through the storefront proxy: `/api/basket` (proxy prefix) + `/basket` (resource).
  * Construct only after `Core.init`, because `config()` reads `Core.baseURL`.
@@ -40,5 +45,12 @@ export class BasketService extends ApiService {
   async updateQuantity(buyerId: string, productId: number, quantity: number): Promise<Basket> {
     const response: { data: Basket } = await this.request.put(`${buyerId}/items/${productId}`, { quantity });
     return response.data;
+  }
+
+  /** `POST /basket/{buyerId}/checkout`: no body is sent. Basket creates the order through Ordering with its snapshot
+   * prices and clears the basket only after the order exists. Returns the new order's id; 400 when the basket is empty. */
+  async checkout(buyerId: string): Promise<number> {
+    const response: { data: CheckoutResult } = await this.request.post(`${buyerId}/checkout`);
+    return response.data.orderId;
   }
 }
