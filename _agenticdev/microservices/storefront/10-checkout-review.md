@@ -1,6 +1,6 @@
 # storefront 10 — checkout review
 
-**Status:** Not started
+**Status:** Done (f6d47ad)
 
 ## Goal
 Let the buyer move from the cart to a read-only review of what they are about to order. This gives storefront/13 the page that its **Place order** button goes on.
