@@ -179,3 +179,46 @@ html {
   outline: 2px solid var(--e-color-primary);
   outline-offset: 1px;
 }
+
+/* Touch targets: vue-base's medium button and text input are a few pixels short of 44px on phones. */
+@media (max-width: 639.98px) {
+  .e-button {
+    min-height: var(--shop-target);
+  }
+  .e-input-wrapper .e-input-wrapper__box input {
+    min-height: 1.75rem;
+  }
+}
+
+/* The whole field box is the target: the label's hit area (it is tied to the input) covers the box padding, with the
+   input and the box's own buttons (clear, chevron) above it. */
+.e-input-wrapper .e-input-wrapper__box {
+  position: relative;
+}
+.e-input-wrapper .e-input-wrapper__box .e-input-wrapper__label::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.e-input-wrapper .e-input-wrapper__box input,
+.e-input-wrapper .e-input-wrapper__box button {
+  position: relative;
+  z-index: 1;
+}
+
+/* Toasts: below the sticky header, so the nav and cart badge stay visible; on phones, along the bottom edge, so they
+   don't cover the page title and controls. */
+.e-toast.e-toast {
+  top: calc(var(--shop-header-height) + var(--e-space-3));
+}
+
+@media (max-width: 639.98px) {
+  .e-toast.e-toast {
+    top: auto;
+    right: var(--shop-gutter);
+    bottom: calc(var(--e-space-3) + env(safe-area-inset-bottom, 0px));
+    left: var(--shop-gutter);
+    width: auto;
+    max-width: none;
+  }
+}
