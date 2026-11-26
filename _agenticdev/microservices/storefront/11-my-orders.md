@@ -1,6 +1,6 @@
 # storefront 11 — my orders
 
-**Status:** Not started
+**Status:** Done (432f626)
 
 ## Goal
 List this buyer's orders on `/orders`. This is the first page that calls Ordering, so it adds the Ordering reference and proxy.
