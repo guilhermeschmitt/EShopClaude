@@ -12,9 +12,11 @@ const loading = ref(true);
 const failed = ref(false);
 const countLabel = computed(() => (orders.value.length === 1 ? '1 order' : `${orders.value.length} orders`));
 
-onMounted(async () => {
+async function load(): Promise<void> {
   // Created here, not at module load: ApiService reads Core.baseURL, which is only set once Core.init has run.
   const service = new OrderingService();
+  loading.value = true;
+  failed.value = false;
   try {
     orders.value = await service.listByBuyer(getBuyerId());
   } catch (error) {
@@ -23,7 +25,9 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+onMounted(load);
 </script>
 
 <template>
@@ -34,13 +38,23 @@ onMounted(async () => {
 
   <ECard v-if="loading" loading />
 
-  <ECard v-else-if="!failed && orders.length === 0">
+  <ECard v-else-if="failed">
+    <EEmptyState
+      icon="cloud_off"
+      title="Your orders didn't load"
+      description="Orders couldn't be reached. Check your connection, then try again."
+    >
+      <EButton label="Try again" prepend-icon="refresh" data-testid="retry" @click="load" />
+    </EEmptyState>
+  </ECard>
+
+  <ECard v-else-if="orders.length === 0">
     <EEmptyState icon="receipt_long" title="No orders yet" description="Orders you place will be listed here.">
       <EButton label="Browse products" to="/" prepend-icon="storefront" class="orders-browse" />
     </EEmptyState>
   </ECard>
 
-  <ECard v-else-if="!failed" flush>
+  <ECard v-else flush>
     <table class="orders-table" role="table" aria-label="Orders">
       <thead role="rowgroup">
         <tr role="row">
@@ -61,7 +75,7 @@ onMounted(async () => {
           <td role="cell" class="orders-table__date" data-testid="order-date">{{ formatDate(order.createdAt) }}</td>
           <td role="cell" class="orders-table__num orders-table__items">
             <span class="num" data-testid="order-items">{{ order.itemCount }}</span>
-            <span class="orders-table__unit">{{ order.itemCount === 1 ? 'item' : 'items' }}</span>
+            <span class="orders-table__unit">&nbsp;{{ order.itemCount === 1 ? 'item' : 'items' }}</span>
           </td>
           <td role="cell" class="orders-table__num orders-table__total" data-testid="order-total">
             <span class="num">{{ formatPrice(order.total) }}</span>

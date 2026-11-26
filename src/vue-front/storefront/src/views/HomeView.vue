@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ProductCard from '@/components/ProductCard.vue';
 import ProductPager from '@/components/ProductPager.vue';
@@ -142,25 +142,36 @@ function onClearFilters(): void {
 }
 
 // One add at a time: the clicked card's button loads and every other card's button is disabled until it settles.
+// A successful add shows "Added" on that card for a moment, next to where the person is looking.
+const ADDED_MS = 1600;
 const { addItem } = useBasket();
 const addingId = ref<number | null>(null);
+const addedId = ref<number | null>(null);
+let addedTimer: ReturnType<typeof setTimeout> | undefined;
 
 async function onAdd(productId: number): Promise<void> {
   if (addingId.value !== null) return;
   addingId.value = productId;
   try {
-    await addItem(productId);
+    if (await addItem(productId)) {
+      clearTimeout(addedTimer);
+      addedId.value = productId;
+      addedTimer = setTimeout(() => (addedId.value = null), ADDED_MS);
+    }
   } finally {
     addingId.value = null;
   }
 }
+
+onBeforeUnmount(() => clearTimeout(addedTimer));
 </script>
 
 <template>
   <div class="page-head">
     <h1>Products</h1>
     <p v-if="!loading && !failed" class="page-head__meta num" role="status" data-testid="product-count">
-{{ resultCount }}</p>
+      {{ resultCount }}
+    </p>
   </div>
 
   <div class="product-filters">
@@ -182,7 +193,7 @@ async function onAdd(productId: number): Promise<void> {
         id="product-search"
         v-model="searchText"
         class="product-search__input"
-        label="Search"
+        label="Search products"
         type="search"
         autocomplete="off"
         data-testid="product-search"
@@ -199,7 +210,10 @@ async function onAdd(productId: number): Promise<void> {
           <ESkeleton height="0.875rem" width="40%" />
           <ESkeleton height="1.125rem" width="80%" />
           <ESkeleton height="0.875rem" width="95%" />
-          <ESkeleton height="2.75rem" width="100%" radius="var(--e-radius-md)" />
+          <div class="product-skeleton__buy">
+            <ESkeleton height="1.5rem" width="30%" />
+            <ESkeleton height="2.75rem" width="45%" radius="var(--e-radius-md)" />
+          </div>
         </div>
       </ECard>
     </li>
@@ -211,12 +225,24 @@ async function onAdd(productId: number): Promise<void> {
         :product="product"
         :adding="addingId === product.id"
         :disabled="addingId !== null && addingId !== product.id"
+        :added="addedId === product.id"
+        :show-category="!category"
         @add="onAdd"
       />
     </li>
   </ul>
 
-  <ECard v-else-if="!failed">
+  <ECard v-else-if="failed">
+    <EEmptyState
+      icon="cloud_off"
+      title="Products didn't load"
+      description="The shop couldn't be reached. Check your connection, then try again."
+    >
+      <EButton label="Try again" prepend-icon="refresh" data-testid="retry" @click="load" />
+    </EEmptyState>
+  </ECard>
+
+  <ECard v-else>
     <EEmptyState icon="search_off" title="No products found" :description="emptyDescription">
       <EButton
         v-if="search || category"
@@ -283,6 +309,12 @@ async function onAdd(productId: number): Promise<void> {
   gap: var(--e-space-3);
   padding: var(--e-space-4);
 }
+.product-skeleton__buy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-space-3);
+}
 
 @media (min-width: 640px) {
   .product-filters {
@@ -297,7 +329,7 @@ async function onAdd(productId: number): Promise<void> {
     grid-template-columns: 1fr;
   }
   .product-skeleton__tile {
-    aspect-ratio: 16 / 9;
+    height: 7.5rem;
     min-height: 0;
   }
   .product-skeleton__body {

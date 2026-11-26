@@ -1,33 +1,42 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { categoryLook } from '@/category';
+import { categoryLook, productIcon } from '@/category';
 import { formatPrice } from '@/format';
 import type { Product } from '@/services/CatalogService';
 
-/** One product: its category colour block, name, description, price and Add to cart. The parent owns the add. */
-const props = defineProps<{ product: Product; adding: boolean; disabled: boolean }>();
+/**
+ * One product: a colour block in its category's tint with an icon for what it is, then name, description, price and
+ * Add to cart. The parent owns the add; `added` briefly confirms one that just succeeded. `showCategory` is off when
+ * the grid is already filtered to one category.
+ */
+const props = withDefaults(
+  defineProps<{ product: Product; adding: boolean; disabled: boolean; added?: boolean; showCategory?: boolean }>(),
+  { added: false, showCategory: true },
+);
 const emit = defineEmits<{ add: [productId: number] }>();
 
 const look = computed(() => categoryLook(props.product.category));
+const icon = computed(() => productIcon(props.product.name, props.product.category));
 </script>
 
 <template>
   <ECard flush class="product-card" :class="`product-card--${look.key}`">
     <div class="product-card__tile" aria-hidden="true">
-      <EIcon :icon="look.icon" class="product-card__icon" />
+      <EIcon :icon="icon" class="product-card__icon" />
     </div>
     <div class="product-card__body">
-      <p class="product-card__category">{{ product.category }}</p>
+      <p v-if="showCategory" class="product-card__category">{{ product.category }}</p>
       <h2 class="product-card__name">{{ product.name }}</h2>
       <p v-if="product.description" class="product-card__description">{{ product.description }}</p>
       <div class="product-card__buy">
         <p class="product-card__price num" data-testid="product-price">{{ formatPrice(product.price) }}</p>
         <EButton
           class="product-card__add"
-          label="Add to cart"
-          prepend-icon="add_shopping_cart"
+          :label="added ? 'Added' : 'Add to cart'"
+          :prepend-icon="added ? 'check' : 'add_shopping_cart'"
+          :type="added ? 'success' : 'primary'"
           loading-label="Adding…"
-          :aria-label="adding ? undefined : `Add to cart: ${product.name}`"
+          :aria-label="adding ? undefined : `${added ? 'Added' : 'Add to cart'}: ${product.name}`"
           :loading="adding"
           :disabled="disabled"
           data-testid="add-to-cart"
@@ -44,8 +53,6 @@ const look = computed(() => categoryLook(props.product.category));
   --ink: var(--shop-cat-other-ink);
   height: 100%;
   overflow: hidden;
-  transition: transform var(--e-transition-base), box-shadow var(--e-transition-base),
-    border-color var(--e-transition-base);
 }
 .product-card--apparel {
   --tint: var(--shop-cat-apparel-tint);
@@ -63,14 +70,9 @@ const look = computed(() => categoryLook(props.product.category));
   --tint: var(--shop-cat-stationery-tint);
   --ink: var(--shop-cat-stationery-ink);
 }
-.product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--e-shadow-md);
-  border-color: var(--e-color-border-strong);
-}
 .product-card :deep(.e-card__body) {
   display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
+  grid-template-columns: 6rem minmax(0, 1fr);
   gap: 0;
   height: 100%;
 }
@@ -81,7 +83,7 @@ const look = computed(() => categoryLook(props.product.category));
   color: var(--ink);
 }
 .product-card__icon {
-  font-size: 2.75rem;
+  font-size: 2.5rem;
 }
 .product-card__body {
   display: flex;
@@ -104,9 +106,9 @@ const look = computed(() => categoryLook(props.product.category));
   line-height: 1.5;
   color: var(--e-color-text-secondary);
 }
+/* Price and button always share one row; the button never stretches, so price stays the loudest thing. */
 .product-card__buy {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--e-space-3);
@@ -119,7 +121,15 @@ const look = computed(() => categoryLook(props.product.category));
   letter-spacing: var(--e-letter-spacing-tight);
 }
 .product-card__add {
+  flex: 0 0 auto;
   min-height: var(--shop-target);
+}
+
+/* Narrow phones: the button can't sit beside the price without squeezing it, so it takes its own row. */
+@media (max-width: 379.98px) {
+  .product-card__buy {
+    flex-wrap: wrap;
+  }
 }
 
 @media (min-width: 640px) {
@@ -128,20 +138,13 @@ const look = computed(() => categoryLook(props.product.category));
     grid-template-rows: auto 1fr;
   }
   .product-card__tile {
-    aspect-ratio: 16 / 9;
+    height: 7.5rem;
   }
   .product-card__icon {
-    font-size: 3.5rem;
+    font-size: 3.25rem;
   }
   .product-card__body {
     padding: var(--e-space-5);
-  }
-  .product-card__buy {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .product-card__add {
-    width: 100%;
   }
 }
 </style>

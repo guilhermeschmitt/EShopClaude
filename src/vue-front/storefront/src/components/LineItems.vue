@@ -160,6 +160,16 @@ function adjust(line: Line, quantity: number): void {
   width: 1%;
   padding-left: 0;
 }
+/* Fixed number columns, so cart, checkout and order line up the same way. */
+.line-items__table .line-items__unit {
+  width: 8.5rem;
+}
+.line-items__table .line-items__qty {
+  width: 11rem;
+}
+.line-items__table .line-items__total {
+  width: 8.5rem;
+}
 
 /* Phones: each row becomes a line card. Headers stay for screen readers; cells show their own labels. */
 @media (max-width: 639.98px) {
@@ -207,6 +217,11 @@ function adjust(line: Line, quantity: number): void {
     grid-area: remove;
     width: auto;
     margin: calc(-1 * var(--e-space-2)) calc(-1 * var(--e-space-2)) 0 0;
+  }
+  .line-items__table .line-items__unit,
+  .line-items__table .line-items__qty,
+  .line-items__table .line-items__total {
+    width: auto;
   }
   .line-items__table .line-items__unit {
     text-align: left;

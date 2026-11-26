@@ -48,6 +48,8 @@
   --e-color-secondary-border: #fdba74;
   --e-color-secondary-contrast: #ffffff;
   --e-color-success: #15803d;
+  --e-color-success-subtle: #e8f7ee;
+  --e-color-success-border: #166534; /* also the success button hover */
   --e-color-danger: #dc2626;
   --e-color-danger-subtle: #fdecec;
   --e-color-skeleton: #e6efea;
@@ -106,6 +108,9 @@
     --e-color-secondary-subtle: rgb(251 146 60 / 14%);
     --e-color-secondary-border: #9a3412;
     --e-color-secondary-contrast: #10231d;
+    --e-color-success: #4ade80;
+    --e-color-success-subtle: rgb(74 222 128 / 12%);
+    --e-color-success-border: #86efac;
     --e-color-danger: #f87171;
     --e-color-danger-subtle: rgb(248 113 113 / 14%);
     --e-color-skeleton: #172722;
@@ -148,6 +153,9 @@
   --e-color-secondary-subtle: rgb(251 146 60 / 14%);
   --e-color-secondary-border: #9a3412;
   --e-color-secondary-contrast: #10231d;
+  --e-color-success: #4ade80;
+  --e-color-success-subtle: rgb(74 222 128 / 12%);
+  --e-color-success-border: #86efac;
   --e-color-danger: #f87171;
   --e-color-danger-subtle: rgb(248 113 113 / 14%);
   --e-color-skeleton: #172722;

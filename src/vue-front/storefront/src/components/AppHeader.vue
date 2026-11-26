@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { unreadBadge } from '@guilherme/vue-base';
 import { useBasket } from '@/stores/basket';
 
 const { itemCount } = useBasket();
+// /orders/:id is a separate route, so RouterLink alone would not mark "My orders" as the current section there.
+const route = useRoute();
+const inOrders = computed(() => route.path === '/orders' || route.path.startsWith('/orders/'));
 
 const cartLabel = computed(() => (itemCount.value > 0 ? `Cart, ${itemCount.value} items` : 'Cart'));
 const badgeText = computed(() => unreadBadge(itemCount.value) as string);
@@ -17,7 +21,12 @@ const badgeText = computed(() => unreadBadge(itemCount.value) as string);
         EShop
       </RouterLink>
       <nav class="app-header__nav" aria-label="Main">
-        <RouterLink to="/orders" class="app-header__link" aria-label="My orders">
+        <RouterLink
+          to="/orders"
+          class="app-header__link"
+          :class="{ 'app-header__link--current': inOrders }"
+          aria-label="My orders"
+        >
           <EIcon icon="receipt_long" aria-hidden="true" />
           <span class="app-header__text" aria-hidden="true">My orders</span>
         </RouterLink>
@@ -101,7 +110,8 @@ const badgeText = computed(() => unreadBadge(itemCount.value) as string);
   background: var(--e-color-surface-hover);
   color: var(--e-color-text);
 }
-.app-header__link.router-link-active {
+.app-header__link.router-link-active,
+.app-header__link--current {
   color: var(--e-color-primary);
   background: var(--e-color-primary-subtle);
 }

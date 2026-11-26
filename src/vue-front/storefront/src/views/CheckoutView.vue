@@ -18,6 +18,16 @@ const service = new BasketService();
 const items = computed(() => basket.value?.items ?? []);
 const total = computed(() => basket.value?.total ?? 0);
 const placing = ref(false);
+const retrying = ref(false);
+
+async function onRetry(): Promise<void> {
+  retrying.value = true;
+  try {
+    await refreshBasket();
+  } finally {
+    retrying.value = false;
+  }
+}
 
 onMounted(() => {
   void refreshBasket();
@@ -28,7 +38,8 @@ async function onPlaceOrder(): Promise<void> {
   placing.value = true;
   try {
     const orderId = await service.checkout(getBuyerId());
-    await router.push(`/orders/${orderId}`);
+    // Same URL as before; the history state tells the order page to show its "Order placed" confirmation.
+    await router.push({ path: `/orders/${orderId}`, state: { placed: true } });
     void refreshBasket();
   } catch (error) {
     showError('Could not place the order', error);
@@ -49,9 +60,33 @@ async function onPlaceOrder(): Promise<void> {
     <ECard loading />
   </div>
 
+  <ECard v-else-if="status === 'failed'">
+    <EEmptyState
+      icon="cloud_off"
+      title="Your cart didn't load"
+      description="Checkout needs your cart. Check your connection, then try again."
+    >
+      <EButton
+        label="Try again"
+        prepend-icon="refresh"
+        :loading="retrying"
+        loading-label="Trying again…"
+        data-testid="retry"
+        @click="onRetry"
+      />
+    </EEmptyState>
+  </ECard>
+
   <ECard v-else-if="status === 'ready' && items.length === 0">
-    <EEmptyState icon="shopping_cart" title="Your cart is empty" description="There is nothing to check out yet.">
-      <EButton label="Back to cart" to="/cart" outlined prepend-icon="arrow_back" class="checkout-back" />
+    <EEmptyState
+      icon="shopping_cart"
+      title="Your cart is empty"
+      description="There is nothing to check out. Orders you already placed are in My orders."
+    >
+      <div class="checkout-empty-actions">
+        <EButton label="Back to cart" to="/cart" outlined prepend-icon="arrow_back" class="checkout-back" />
+        <EButton label="My orders" to="/orders" outlined prepend-icon="receipt_long" />
+      </div>
     </EEmptyState>
   </ECard>
 
@@ -77,6 +112,12 @@ async function onPlaceOrder(): Promise<void> {
 </template>
 
 <style scoped>
+.checkout-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--e-space-2);
+}
 .checkout-edit {
   align-self: center;
 }

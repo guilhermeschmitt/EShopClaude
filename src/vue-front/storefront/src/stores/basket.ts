@@ -37,15 +37,17 @@ export async function refreshBasket(): Promise<void> {
   }
 }
 
-/** Adds one unit of a product; the basket Basket returns becomes the state. Never rejects: a failure leaves the
- * state as it was and shows the error toast. */
-export async function addItem(productId: number): Promise<void> {
+/** Adds one unit of a product; the basket Basket returns becomes the state. Never rejects: it resolves `true` on
+ * success, and on failure leaves the state as it was, shows the error toast and resolves `false`. */
+export async function addItem(productId: number): Promise<boolean> {
   service ??= new BasketService();
   try {
     state.value = await service.addItem(getBuyerId(), productId);
     statusState.value = 'ready';
+    return true;
   } catch (error) {
     showError('Could not add to cart', error);
+    return false;
   }
 }
 
