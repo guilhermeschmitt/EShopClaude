@@ -8,6 +8,7 @@ import vue from '@vitejs/plugin-vue';
 const serviceUrls: Record<string, string | undefined> = {
   basket: process.env.services__basket__http__0,
   catalog: process.env.services__catalog__http__0,
+  ordering: process.env.services__ordering__http__0,
 };
 
 // Aspire's endpoint proxy keeps accepting connections for a stopped service and never answers. Without a timeout the
